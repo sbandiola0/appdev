@@ -1,0 +1,19 @@
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <span class="close" (click)="onCancel()">&times;</span>
+    <h2>Edit User</h2>
+    <form (ngSubmit)="onSaveClick()">
+      <input type="text" placeholder="First Name" [(ngModel)]="user.first_name" name="first_name" required />
+      <input type="text" placeholder="Last Name" [(ngModel)]="user.last_name" name="last_name" required />
+      <input type="text" placeholder="Middle Name" [(ngModel)]="user.middle_name" name="middle_name" />
+      <input type="text" placeholder="Program" [(ngModel)]="user.program" name="program" required />
+      <input type="email" placeholder="Email" [(ngModel)]="user.email" name="email" required />
+      <!-- <input type="password" placeholder="Password" [(ngModel)]="user.password" name="password" required /> -->
+
+      <div class="dialog-actions">
+        <button type="button" (click)="onCancel()">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>

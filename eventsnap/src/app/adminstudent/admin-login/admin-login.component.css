@@ -1,0 +1,95 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 800px; /* Increased width */
+  padding: 30px; /* Increased padding */
+}
+
+.logo-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-section {
+  flex: 1;
+  padding: 30px; /* Increased padding */
+}
+
+.logo img {
+  width: 150px; /* Increased logo size */
+  height: auto;
+  border-radius: 50%;
+  margin-left: 30px;
+}
+
+.logo {
+  text-align: center;
+  justify-content: center;
+}
+
+.logo h1 {
+  font-size: 32px; /* Increased font size */
+  font-weight: 600; /* Slightly bolder */
+}
+
+.logo p {
+  font-size: 18px; /* Added size to the subtitle */
+}
+
+.login-form h2 {
+  font-size: 32px; /* Increased font size */
+  font-weight: 700; /* Bolder for emphasis */
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 15px; /* Increased input padding */
+  margin: 15px 0; /* Increased margin */
+  font-size: 18px; /* Increased font size */
+  border: none;
+  border-radius: 8px; /* Increased border radius */
+  background-color: white;
+}
+
+button {
+  width: 100%;
+  padding: 15px; /* Increased button padding */
+  font-size: 18px; /* Increased font size */
+  background-color: #65558F;
+  color: white;
+  border: none;
+  border-radius: 8px; /* Increased border radius */
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #917aca;
+}
+
+.error-message {
+  margin-top: 10px;
+  color: red;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+  }
+
+}

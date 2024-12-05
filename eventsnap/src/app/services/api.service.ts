@@ -1,0 +1,218 @@
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { catchError, map, Observable, throwError } from 'rxjs';
+import { of } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+
+  // private baseUrl = 'https://api.eventsnap.online/routes.php?request=';
+  private baseUrl = 'http://localhost/eventsnap/backend_php/api/';
+
+  constructor(private http: HttpClient) { }
+
+  getEvents(): Observable<any[]> {
+    return this.http.get<any>(this.baseUrl + 'events').pipe(
+      map((response: any) => {
+        console.log('Raw Events Response:', response);
+
+        // More flexible response handling
+        if (response) {
+          // If response is an array, return it directly
+          if (Array.isArray(response)) {
+            return response;
+          }
+          
+          // If response has data property, return data
+          if (response.data && Array.isArray(response.data)) {
+            return response.data;
+          }
+          
+          // If response has code 200, try to return data
+          if (response.code === 200 && response.data) {
+            return response.data;
+          }
+        }
+
+        // If no events found, return empty array
+        console.warn('No events found or unexpected response:', response);
+        return [];
+      }),
+      catchError((error) => {
+        console.error('Events Fetch Error:', error);
+        // Return an empty array instead of throwing an error
+        return of([]);
+      })
+    );
+  }
+
+
+  getUsers(): Observable<any> {
+    return this.http.get<any>(this.baseUrl + 'users');
+  }
+
+  getAttendance(): Observable<any[]> {
+    return this.http.get<any[]>(this.baseUrl + 'attendance');
+  }
+
+  updateEvent(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'updateEvent', data);
+  }
+
+  addUser(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'addUser', data);
+  }
+
+  updateUser(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'updateUser', data);
+  }
+
+// Add this method to the ApiService class
+getEventParticipantsCount(): Observable<any> {
+  return this.http.get<any>(this.baseUrl + 'countEventParticipants');
+}
+
+  deleteUser(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'deleteUser', data);
+  }
+
+  addEvent(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'addevent', data);
+  }
+
+  deleteEvent(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'deleteEvent', data);
+  }
+
+  deleteUserAttendance(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'deleteUserAttendance', data);
+  }
+
+  userRegister(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'userRegister', data).pipe(
+       catchError((error) => {
+          console.error("Registration error:", error);
+          return throwError(() => new Error('Registration failed'));
+       })
+    );
+ }
+
+  //  getEventHistory(userId: string): Observable<any[]> {
+  //   const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+  //   return this.http.get<any[]>(`${this.baseUrl}event-history/${userId}`, { headers });
+  // }
+
+  getEventHistory(userId: string): Observable<any[]> {
+    const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+    return this.http.get<any[]>(`${this.baseUrl}event-history/${userId}`, { headers }).pipe(
+      map((data: any[]) => {
+        // Optional: You can process the data here, if needed.
+        return data; // Ensure the response contains event history with status field
+      }),
+      catchError((error) => {
+        console.error('Error fetching event history:', error);
+        return throwError(() => new Error('Failed to fetch event history'));
+      })
+    );
+  }
+
+  // getUserAttendanceStatus(userId: string): Observable<any> {
+  //   return this.http.get<any>(`${this.baseUrl}getUserAttendanceStatus/${userId}`);
+  // }
+
+  // Example of improved error handling
+checkEventAttendance(studentId: string, eventId: string): Observable<any> {
+  return this.http.post<any>(`${this.baseUrl}/check-attendance.php`, {
+    student_id: studentId,
+    event_id: eventId
+  }).pipe(
+    catchError(error => {
+      console.error('Check attendance error:', error);
+      return throwError(() => new Error('Failed to check event attendance'));
+    })
+  );
+}
+
+  // In api.service.ts
+  checkUserEventAttendance(studentId: string, eventId: number): Observable<boolean> {
+    // Retrieve token from local storage
+    const token = localStorage.getItem('token');
+  
+    // If no token, return false
+    if (!token) {
+      console.error('No authentication token found');
+      return of(false);
+    }
+  
+    // Include authorization header
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  
+    return this.http.get<any>(`${this.baseUrl}check-event-attendance`, {
+      headers: headers,
+      params: {
+        student_id: studentId,
+        event_id: eventId.toString()
+      }
+    }).pipe(
+      map(response => {
+        // Handle different possible response formats
+        if (typeof response === 'boolean') {
+          return response;
+        }
+        if (response && 'hasAttended' in response) {
+          return response.hasAttended;
+        }
+        // Default to false if response doesn't match expected formats
+        return false;
+      }),
+      catchError(error => {
+        if (error instanceof HttpErrorResponse) {
+          switch (error.status) {
+            case 403:
+              console.error('Forbidden: Check your authentication', error.error);
+              // Optionally redirect to login or refresh token
+              break;
+            case 401:
+              console.error('Unauthorized: Token may be expired', error.error);
+              // Handle token refresh or logout
+              break;
+          }
+        }
+        return of(false);
+      })
+    );
+  }
+
+  recordAttendance(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'record-attendance', data);
+  }
+
+  approvedAttendance(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl + 'approvedAttendance', data)
+  }
+
+  getApprovedParticipants(): Observable<any> {
+    return this.http.get<any>(this.baseUrl + 'getApprovedParticipants');
+  }
+
+  getApprovedParticipantsCount(): Observable<any> {
+    return this.http.get<any>(this.baseUrl + 'countApprovedParticipants');
+  }
+
+  getParticipantsCount(): Observable<any> {
+    return this.http.get<any>(this.baseUrl + 'countParticipants');
+  }
+
+  getUserApprovedAttendance(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/approved_attendance/${userId}`);
+  }
+
+  getUserCapturedImage(userId: string, eventId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/get-captured-image/${userId}/${eventId}`);
+  }
+}

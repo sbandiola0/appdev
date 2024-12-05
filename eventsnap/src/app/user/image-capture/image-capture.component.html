@@ -1,0 +1,19 @@
+<div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/3 shadow-lg rounded-md bg-white">
+  <div class="flex justify-between items-center">
+    <h4 class="text-lg font-bold text-black">Capture Your Image</h4>
+  </div>
+  
+  <div class="mt-3 text-center relative">
+    <!-- Video and Canvas are overlaid on each other -->
+    <video #video autoplay playsinline [hidden]="image !== null" class="capture-area"></video>
+    <canvas #canvas [hidden]="image === null" class="capture-area"></canvas>
+
+    <p class="mt-4 text-sm text-zinc-600">Please stand by for image capture</p>
+
+    <div class="mt-4">
+      <button *ngIf="!image" (click)="captureImage()" class="bg-blue-500 text-white py-1 px-4 rounded-md hover:bg-blue-600 transition-colors">Capture</button>
+      <button *ngIf="image" (click)="retakeImage()" class="bg-yellow-500 text-white py-1 px-4 rounded-md hover:bg-yellow-600 transition-colors">Retake</button>
+      <button *ngIf="image" (click)="confirmImage()" [disabled]="!image" class="bg-green-500 text-white py-1 px-4 rounded-md hover:bg-green-600 transition-colors ml-2">Confirm Image</button>
+    </div>
+  </div>
+</div>

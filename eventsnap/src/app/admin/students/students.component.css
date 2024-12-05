@@ -1,0 +1,32 @@
+.container{
+  width: 80%;
+  margin-left: 150px;
+  margin-top: 100px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-student-button {
+  background: rgba(117, 117, 117, 0.503);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 30px;
+  color: white;
+  font-weight: bold;
+  backdrop-filter: blur(10px);
+  transition: background 0.3s, transform 0.3s;
+}
+
+.add-student-button:hover {
+  background: rgba(91, 91, 91, 0.201);
+  transform: scale(1.05);
+}
+
+.add-student-button:active {
+  background: rgba(255, 255, 255, 0.4);
+}

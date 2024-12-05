@@ -1,0 +1,187 @@
+/* Color Variables */
+:root {
+  --primary-color: #A68BC3;  /* Soft pastel purple */
+  --background-color: #F5F5F5;  /* Soft off-white */
+  --text-color: #333;
+  --secondary-color: #E6E6FA;  /* Lavender pastel */
+  --accent-color: #D8BFD8;  /* Soft pink-purple */
+  --border-color: #CAB8D6;  /* Muted purple */
+}
+
+.container {
+  justify-content: right;
+  transition: margin-left 0.3s ease;
+  margin-top: 200px;
+  width: 100%;
+  min-height: 700px;
+  background-color: var(--background-color);
+  padding: 20px;
+}
+
+.box-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  max-width: 100%;
+  justify-items: center;
+  padding: 0 20px;
+}
+
+.boxbox {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.boxbox:hover {
+  transform: translateY(-10px);
+}
+
+.event-card {
+  width: 300px;
+  background-color: white;
+  border-radius: 15px;
+  border: 0.2px solid #d6d5d5;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 12px rgba(166, 139, 195, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.event-card:hover {
+  box-shadow: 0 10px 20px rgba(166, 139, 195, 0.2);
+}
+
+.school-picture {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.event-card:hover .school-picture {
+  transform: scale(1.05);
+}
+
+.event-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  background-color: white;
+}
+
+.event-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: var(--primary-color);
+  transition: color 0.3s ease;
+}
+
+.event-school {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.event-location,
+.event-date,
+.event-time {
+  margin: 5px 0;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.participant-count {
+  display: inline-block;
+  margin: 10px 0;
+  font-weight: 600;
+  color: var(--primary-color);
+  background-color: var(--secondary-color);
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.attend-button {
+  width: 100%; /* Make button full width */
+  margin-top: 0; /* Remove previous margin */
+  background-color: #8264a1;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.attend-button:hover:not(:disabled) {
+  background-color: #A68BC3;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(166, 139, 195, 0.3);
+}
+
+.attend-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.past-event {
+  opacity: 0.6;
+}
+
+.past-event .attend-button {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 0;
+    margin-top: 150px;
+    padding: 10px;
+  }
+
+  .box-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 0 10px;
+  }
+
+  .boxbox {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .event-card {
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+  }
+
+  .school-picture {
+    height: 180px;
+  }
+}
+
+/* Optional: Scroll bar styling for webkit browsers */
+.box-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box-container::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+}
+
+.box-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+

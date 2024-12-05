@@ -1,0 +1,33 @@
+.image-capture-container {
+    text-align: center;
+    margin: 20px;
+  }
+
+  .image-preview {
+    margin-top: 20px;
+  }
+
+  .preview-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+
+  .capture-area {
+    width: 100%; /* Ensure full container width */
+    max-width: 500px; /* Limit maximum size for consistency */
+    height: 400px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensure content scales without distortion */
+    margin: 0 auto; /* Center within the container */
+    border: 2px solid #ddd; /* Optional: Add border for better visibility */
+  }
+  
+
+  .text-center {
+    text-align: center;
+  }

@@ -1,0 +1,141 @@
+/* Color Variables */
+:root {
+  --primary-color: #A68BC3;  /* Soft pastel purple */
+  --background-color: #F5F5F5;  /* Soft off-white */
+  --text-color: #333;
+  --secondary-color: #E6E6FA;  /* Lavender pastel */
+  --accent-color: #D8BFD8;  /* Soft pink-purple */
+  --border-color: #CAB8D6;  /* Muted purple */
+}
+
+/* Global Styles */
+.container {
+  max-width: 1200px;
+  margin: 130px auto;
+  padding: 0 15px;
+}
+
+/* Header Styling */
+.header {
+  background-color: var(--secondary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(166, 139, 195, 0.2);
+}
+
+.header h2 {
+  color: #A68BC3;
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+/* Table Styling */
+.mat-table {
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(166, 139, 195, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* Header Row Styling */
+.mat-header-row {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.mat-header-cell {
+  color: white !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  background-color: var(--primary-color);
+}
+
+/* Data Rows */
+.mat-row {
+  transition: background-color 0.3s ease;
+}
+
+.mat-row:hover {
+  background-color: var(--secondary-color);
+}
+
+.mat-cell {
+  padding: 15px;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Alternating Row Colors */
+.mat-row:nth-child(even) {
+  background-color: var(--secondary-color);
+}
+
+/* Image Cell Styling */
+.mat-cell img {
+  max-width: 100px;
+  max-height: 100px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(166, 139, 195, 0.2);
+  object-fit: cover;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mat-cell img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(166, 139, 195, 0.3);
+  cursor: pointer;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 0 10px;
+  }
+
+  .header h2 {
+    font-size: 1.2rem;
+  }
+
+  .mat-cell {
+    padding: 10px;
+  }
+
+  .mat-cell img {
+    max-width: 75px;
+    max-height: 75px;
+  }
+}
+
+/* Scrollbar Styling for Overflow */
+.mat-table-sticky-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.mat-table-sticky-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mat-table-sticky-container::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+}
+
+.mat-table-sticky-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.mat-table-sticky-container::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Global Background */
+body {
+  background-color: var(--background-color);
+}

@@ -1,0 +1,98 @@
+<app-admin></app-admin>
+
+<div class="container mx-auto p-4">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="relative p-4 rounded-lg shadow-md" style="padding-bottom: 80px; background-color: #65558F;">
+      <p class="text-white font-bold">BSEMC Registered</p>
+      <p class="absolute bottom-4 right-4 text-3xl font-bold">{{ bsemcCount}}</p>
+    </div>
+    <div class="relative p-4 rounded-lg shadow-md" style="padding-bottom: 80px; background-color: #65558F;">
+      <p class="text-white font-bold">BSIT Registered</p>
+      <p class="absolute bottom-4 right-4 text-3xl font-bold">{{ bsitCount}}</p>
+    </div>
+    <div class="relative p-4 rounded-lg shadow-md" style="padding-bottom: 80px; background-color: #65558F;">
+      <p class="text-white font-bold">BSCS Registered</p>
+      <p class="absolute bottom-4 right-4 text-3xl font-bold">{{ bscsCount}}</p>
+    </div>
+  </div>
+  
+  <div class="mt-4 relative p-4 rounded-lg shadow-md" style="padding-bottom: 80px; background-color: #65558F;">
+    <p class="text-white font-bold">CCS Students Registered</p>
+    <p class="absolute bottom-4 right-4 text-3xl font-bold">{{ bscsCount + bsemcCount + bsitCount}}</p>
+  </div>
+  
+</div>
+<!-- 
+<div class="pie">
+  <canvasjs-chart [options]="chartOptionsUsers" [styles]="{ width: '100%', height: '360px' }"></canvasjs-chart>
+</div> -->
+
+<div class="charts grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+  <!-- New Bar Chart -->
+  <div class="bar">
+    <canvasjs-chart [options]="chartOptionsEvents" [styles]="{ width: '100%', height: '360px' }"></canvasjs-chart>
+  </div>
+
+    <!-- Existing Doughnut Chart -->
+  <div class="pie">
+    <canvasjs-chart [options]="chartOptionsPrograms" [styles]="{ width: '100%', height: '360px' }"></canvasjs-chart>
+  </div>
+</div>
+
+
+
+
+<div class="container">
+  <h2>Registration History</h2>
+  <!-- Table with sorting and pagination -->
+  <mat-table [dataSource]="dataSource" matSort>
+    <!-- Define table columns -->
+    <ng-container matColumnDef="student_id">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Student ID </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.student_id }} </mat-cell>
+    </ng-container>
+  
+    <ng-container matColumnDef="last_name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Last Name </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.last_name }} </mat-cell>
+    </ng-container>
+  
+    <ng-container matColumnDef="first_name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> First Name </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.first_name }} </mat-cell>
+    </ng-container>
+  
+    <ng-container matColumnDef="middle_name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Middle Name </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.middle_name }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="program">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Program </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.program }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Email </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.email }} </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="date_added">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> Date Added </mat-header-cell>
+      <mat-cell *matCellDef="let user"> {{ user.date_added }} </mat-cell>
+    </ng-container>
+  
+    <!-- Specify displayed columns -->
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let user; columns: displayedColumns"></mat-row>
+  </mat-table>
+  
+  <!-- Pagination controls -->
+  <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+</div>
+
+
+
+

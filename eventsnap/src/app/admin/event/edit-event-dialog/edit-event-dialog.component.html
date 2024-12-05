@@ -1,0 +1,19 @@
+<div class="modal" *ngIf="isModalOpen">
+    <div class="modal-content">
+      <span class="close" (click)="onCancel()">&times;</span>
+      <h2>Edit Event</h2>
+      <form (ngSubmit)="onSaveClick()">
+        <input type="text" placeholder="Event Name" [(ngModel)]="event.event_name" name="event_name" required />
+        <input type="text" placeholder="School Name" [(ngModel)]="event.school_name" name="school_name" required />
+        <input type="date" placeholder="Event Date" [(ngModel)]="event.event_date" name="event_date" required />
+        <input type="time" placeholder="Event Start Time" [(ngModel)]="event.event_start_time" name="event_start_time" required />
+        <input type="time" placeholder="Event End Time" [(ngModel)]="event.event_end_time" name="event_end_time" required />
+        <input type="number" placeholder="Max Participants" [(ngModel)]="event.max_participants" name="max_participants" min="1" required />
+        <div class="dialog-actions">
+          <button type="button" (click)="onCancel()">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  

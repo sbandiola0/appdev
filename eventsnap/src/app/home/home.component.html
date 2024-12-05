@@ -1,0 +1,50 @@
+<div class="main-container">
+  <div class="date-time">{{ currentDate | date: 'MMM dd, yyyy hh:mm:ss a' }}</div>
+  <div class="login-container">
+    <div class="logo-section">
+      <div class="logo">
+        <img src="../../assets/team-logo.png" alt="EventSnap Logo" />
+        <h1>EventSnap</h1>
+        <p>Registration Attendance</p>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="login-form">
+        <h2>Welcome</h2>
+        <form (ngSubmit)="login()">
+          <input type="text" placeholder="Student ID" [(ngModel)]="loginData.student_id" name="student_id" required />
+          <input type="password" placeholder="Password" [(ngModel)]="loginData.password" name="password" required />
+          <button type="submit">Login</button>
+          <div class="register-link">
+            <p>Not registered yet? <a href="#" (click)="openModal()">Sign Up</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal()">&times;</span>
+    <h2>Sign Up</h2>
+    <form (ngSubmit)="register()">
+      <input type="text" placeholder="Last Name" [(ngModel)]="registerData.last_name" name="last_name" required />
+      <input type="text" placeholder="First Name" [(ngModel)]="registerData.first_name" name="first_name" required />
+      <input type="text" placeholder="Middle Name (leave it blank if none)" [(ngModel)]="registerData.middle_name" name="middle_name" />
+      <input type="email" placeholder="Email" [(ngModel)]="registerData.email" name="email" required />
+      <label for="course">Course:</label>
+      <select id="course" [(ngModel)]="registerData.program" name="program" required>
+        <option value="" disabled selected>Select Course</option>
+        <option value="BSCS">BSCS</option>
+        <option value="BSIT">BSIT</option>
+        <option value="BSEMC">BSEMC</option>
+      </select>
+      <input type="number" placeholder="Student ID" [(ngModel)]="registerData.student_id" name="student_id" required />
+      <input type="password" placeholder="Password" [(ngModel)]="registerData.password" name="password" required />
+
+
+      <button type="submit">Sign Up</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal()">&times;</span>
+    <h2>Add Event</h2>
+    <form (ngSubmit)="onAdd()" [formGroup]="addEventForm">
+      <input type="text" placeholder="Event Name" formControlName="event_name" required />
+      <input type="text" placeholder="School Name" formControlName="school_name" required />
+      <input type="date" placeholder="Event Date" formControlName="event_date" required />
+      <input type="time" placeholder="Event Start Time" formControlName="event_start_time" required />
+      <input type="time" placeholder="Event End Time" formControlName="event_end_time" required />
+      <input type="number" placeholder="Max Participants" formControlName="max_participants" required />
+      <label for="exclusive_for">Exclusive For:</label>
+      <select id="exclusive_for" formControlName="exclusive_for" required>
+        <option value="" disabled selected>Select Course</option>
+        <option value="BSCS">BSCS</option>
+        <option value="BSIT">BSIT</option>
+        <option value="BSEMC">BSEMC</option>
+        <option value="ALL CCS">FOR ALL CCS</option>
+      </select>
+
+      <button type="submit" (ngSubmit)="onAdd()" [disabled]="!addEventForm.valid">Add Event</button>
+    </form>
+  </div>
+</div>

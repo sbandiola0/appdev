@@ -1,0 +1,22 @@
+<div class="main-container">
+  <!-- <div class="date-time">{{ currentDate | date: 'MMM dd, yyyy hh:mm:ss a' }}</div> -->
+  <div class="login-container">
+    <div class="logo-section">
+      <div class="logo">
+        <img src="../../assets/team-logo.png" alt="EventSnap Logo" />
+        <h1>EventSnap</h1>
+        <p>Registration Attendance</p>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="login-form">
+        <h2>Admin Login</h2>
+        <form (ngSubmit)="login()">
+          <input type="text" placeholder="Student ID" [(ngModel)]="id" name="student_id" required />
+          <input type="password" placeholder="Password" [(ngModel)]="password" name="password" required />
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
