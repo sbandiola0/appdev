@@ -20,7 +20,7 @@ import { AuthService } from '../../services/auth.service';
   export class UserComponent implements OnInit {
     currentDate: Date = new Date();
     isSidebarOpen = false;
-    loggedInUser: { name: string | null, course: string | null } = { name: null, course: null };
+    loggedInUser: { name: string | null, course: string | null, userId: string | null } = { name: null, course: null, userId: null };
 
     constructor(
       private apiService: ApiService,
@@ -38,6 +38,7 @@ import { AuthService } from '../../services/auth.service';
       // Retrieve logged-in user data
       const userData = this.authService.getLoggedInUserData();
       this.loggedInUser.name = userData.name;
+      this.loggedInUser.userId = userData.userId;
       this.loggedInUser.course = userData.course;
     }
 

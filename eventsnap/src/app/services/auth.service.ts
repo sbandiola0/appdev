@@ -12,7 +12,7 @@ export class AuthService {
 
   // Admin login (keeping your previous admin code unchanged)
   login(id: string, password: string) {
-    return this.http.post<any>('http://localhost/appdev/appdev/eventsnap/backend_php/api/login', { id, password })
+    return this.http.post<any>('http://localhost/appdev/eventsnap/backend_php/api/login', { id, password })
       .pipe(
         map(response => {
           if (response.success) {
@@ -32,7 +32,7 @@ export class AuthService {
 
   // User login (new code)
   userLogin(student_id: string, password: string) {
-    return this.http.post<any>('http://localhost/appdev/appdev/eventsnap/backend_php/api/userLogin', { student_id, password })
+    return this.http.post<any>('http://localhost/appdev/eventsnap/backend_php/api/userLogin', { student_id, password })
       .pipe(
         map(response => {
           // console.log('User login response:', response); 
@@ -75,7 +75,8 @@ export class AuthService {
   getLoggedInUserData() {
     return {
       id: localStorage.getItem('userId'),
-      name: localStorage.getItem('userName'),
+      name: localStorage.getItem('userFirstName')  + ' ' + localStorage.getItem('userLastName'),
+      userId: localStorage.getItem('userId'),
       course: localStorage.getItem('userCourse')
     };
   }

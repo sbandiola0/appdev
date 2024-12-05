@@ -9,7 +9,7 @@ import { of } from 'rxjs';
 export class ApiService {
 
   // private baseUrl = 'https://api.eventsnap.online/routes.php?request=';
-  private baseUrl = 'http://localhost/appdev/appdev/eventsnap/backend_php/api/';
+  private baseUrl = 'http://localhost/appdev/eventsnap/backend_php/api/';
 
   constructor(private http: HttpClient) { }
 

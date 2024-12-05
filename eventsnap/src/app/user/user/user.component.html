@@ -15,9 +15,9 @@
 <div class="side-nav" [ngClass]="{'active': isSidebarOpen}">
   <div class="logo-container">
     <div class="circle-logo"></div>
-    <h1>EventSnap</h1>
-    <p>{{ loggedInUser.name }}</p> <!-- Display user course -->
+    <h1>{{ loggedInUser.name }}</h1>
     <p>{{ loggedInUser.course }}</p>
+    <p>{{ loggedInUser.userId }}</p>
   </div>
   <ul class="nav-links">
     <li routerLink="/events"><a routerLink="/events">Events</a></li>
