@@ -124,7 +124,6 @@ export class EventRegistrationComponent implements OnInit {
     try {
       const result = await this.router.navigate(['/image-capture']);
       console.log('Navigation result:', result);
-      
       if (!result) {
         throw new Error('Navigation failed');
       }
@@ -135,6 +134,7 @@ export class EventRegistrationComponent implements OnInit {
       this.isLoading = false;
     }
   }
+  
 
   private markFormFieldsAsTouched() {
     Object.keys(this.registrationForm.controls).forEach(field => {

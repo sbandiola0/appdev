@@ -12,7 +12,7 @@ export class AuthService {
 
   // Admin login (keeping your previous admin code unchanged)
   login(id: string, password: string) {
-    return this.http.post<any>('http://localhost/eventsnap/backend_php/api/login', { id, password })
+    return this.http.post<any>('http://localhost/appdev/appdev/eventsnap/backend_php/api/login', { id, password })
       .pipe(
         map(response => {
           if (response.success) {
@@ -32,7 +32,7 @@ export class AuthService {
 
   // User login (new code)
   userLogin(student_id: string, password: string) {
-    return this.http.post<any>('http://localhost/eventsnap/backend_php/api/userLogin', { student_id, password })
+    return this.http.post<any>('http://localhost/appdev/appdev/eventsnap/backend_php/api/userLogin', { student_id, password })
       .pipe(
         map(response => {
           // console.log('User login response:', response); 
@@ -82,16 +82,24 @@ export class AuthService {
 
   // Admin logout
   logout() {
+    localStorage.clear();
     localStorage.removeItem('token');
     this.router.navigate(['/admin-login']);
   }
 
   // User logout
+  // userLogout() {
+  //   localStorage.removeItem('userToken');
+  //   localStorage.removeItem('userId');
+  //   localStorage.removeItem('userLastName');
+  //   localStorage.removeItem('userFirstName'); 
+  //   localStorage.removeItem('userCourse'); 
+  //   this.router.navigate(['/home']); 
+  // }
+
   userLogout() {
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userCourse');
-    this.router.navigate(['/home']);
+    localStorage.clear(); // Clears all items from local storage
+    this.router.navigate(['/home']); // Redirect to home after logout
   }
+  
 }

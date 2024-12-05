@@ -105,15 +105,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
                                 //     break;
 
                                 case 'check-event-attendance':
-                                  if (isset($request[1]) && isset($request[2])) {
-                                      $studentId = $request[1];
-                                      $eventId = $request[2];
-                                      echo json_encode($get->checkUserEventAttendance($studentId, $eventId));
-                                  } else {
-                                      echo json_encode(array('error' => 'Student ID and Event ID are required.'));
-                                      http_response_code(400); // Bad Request
-                                  }
-                                  break;
+                                    if (isset($_GET['student_id']) && isset($_GET['event_id'])) {
+                                        $studentId = $_GET['student_id'];
+                                        $eventId = $_GET['event_id'];
+                                        echo json_encode($get->checkUserEventAttendance($studentId, $eventId));
+                                    } else {
+                                        echo json_encode(array('error' => 'Student ID and Event ID are required.'));
+                                        http_response_code(400); // Bad Request
+                                    }
+                                    break;
+                                
+                                
                             
                         
 

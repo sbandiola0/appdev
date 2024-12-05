@@ -102,22 +102,37 @@ export class UsersAttendedEventsComponent implements OnInit {
       (response: any) => {
         if (response && response.code === 200) {
           this.dataSource.data = Array.isArray(response.data)
-            ? response.data.map((item: any) => ({
-                ...item,
-                image: this.sanitizer.bypassSecurityTrustUrl('data:image/jpeg;base64,' + item.image)
-              }))
+            ? response.data.map((item: any) => {
+                console.log('Attendance Record:', item); // Debugging: log each attendance record
+  
+                // Validate that the image string is not empty and in the correct format
+                const base64Pattern = /^data:image\/(png|jpeg|jpg);base64,/;
+                if (item.image && base64Pattern.test(item.image)) {
+                  return {
+                    ...item,
+                    image: this.sanitizer.bypassSecurityTrustUrl(item.image), // No need to prepend 'data:image/jpeg;base64,' again
+                    // Ensure attendance ID is correctly passed along with each record
+                    attendanceId: item.id // Add a field for attendance ID
+                  };
+                } else {
+                  console.warn('Invalid Image Data:', item.image);
+                  return { ...item, image: '', attendanceId: item.id }; // Add attendanceId if image is invalid
+                }
+              })
             : [];
           this.dataSource.paginator = this.paginator;
           this.dataSource.sort = this.sort;
         } else {
-          console.error('Failed to fetch Events.', response ? response.errmsg : 'Unknown error');
+          console.error('Failed to fetch Attendance.', response ? response.errmsg : 'Unknown error');
         }
       },
       (error) => {
-        console.error('Error fetching Events', error);
+        console.error('Error fetching Attendance', error);
       }
     );
   }
+  
+  
 
   fetchApprovedParticipants() {
     this.apiService.getApprovedParticipants().subscribe({
@@ -221,33 +236,36 @@ getApprovedAttendanceForEvent(eventName: string) {
   return this.approvedDataSource.data.filter(item => item.event_name === eventName);
 }
 
-  deleteUserAttendance(studentId: string) {
-    const confirmation = window.confirm(`Are you sure you want to delete user with ID: ${studentId}?`);
-    if (confirmation) {
-      console.log('Deleting user with ID:', studentId); // Debug student ID
-      this.apiService.deleteUserAttendance({ id: studentId }).subscribe(
-        (response: any) => {
-          if (response && response.status && response.status.remarks === 'success') {
-            this.snackBar.open('User attendance record deleted successfully', 'Close', {
-              duration: 3000
-            });
-            this.fetchAttendance(); // Refresh attendance list
-          } else {
-            console.error('Failed to delete user attendance record:', response.status.message);
-            this.snackBar.open('Failed to delete user attendance record.', 'Close', {
-              duration: 3000
-            });
-          }
-        },
-        (error) => {
-          console.error('Error deleting user attendance record:', error);
-          this.snackBar.open('Error deleting user attendance record.', 'Close', {
+deleteUserAttendance(attendanceId: string) {
+  const confirmation = window.confirm(`Are you sure you want to delete attendance with ID: ${attendanceId}?`);
+  if (confirmation) {
+    console.log('Deleting attendance with ID:', attendanceId); // Debug attendance ID
+    this.apiService.deleteUserAttendance({ id: attendanceId }).subscribe(
+      (response: any) => {
+        if (response && response.status && response.status.remarks === 'success') {
+          this.snackBar.open('User attendance record deleted successfully', 'Close', {
+            duration: 3000
+          });
+          this.fetchAttendance(); // Refresh attendance list
+        } else {
+          console.error('Failed to delete user attendance record:', response.status.message);
+          this.snackBar.open('Failed to delete user attendance record.', 'Close', {
             duration: 3000
           });
         }
-      );
-    }
+      },
+      (error) => {
+        console.error('Error deleting user attendance record:', error);
+        this.snackBar.open('Error deleting user attendance record.', 'Close', {
+          duration: 3000
+        });
+      }
+    );
   }
+}
+
+
+
 
   isEventWithoutAttendance(eventName: string): boolean {
     return this.getPendingAttendanceForEvent(eventName).length === 0 &&

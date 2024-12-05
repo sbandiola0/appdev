@@ -29,38 +29,45 @@ export class ImageCaptureComponent {
   ) {}
 
   ngOnInit(): void {
-    // Retrieve the selected event from localStorage
+    this.userData = this.authService.getLoggedInUserData();
     const selectedEvent = JSON.parse(localStorage.getItem('selectedEvent') || 'null');
-
-
-      // Log userData for debugging
-  this.userData = this.authService.getLoggedInUserData();
-  console.log('User Data on Init:', this.userData); // Debugging log
-    // If no event is selected, you can navigate to the events page
-    if (!selectedEvent || !selectedEvent.event_name || !selectedEvent.event_date || !selectedEvent.event_id) {
-      // this.router.navigate(['/events']);
+  
+    if (!selectedEvent) {
+      console.error('No selected event data found');
+      this.router.navigate(['/events']);
       return;
     }
-
-    // Start the video capture
+  
+    console.log('Selected Event:', selectedEvent);
     this.startVideo();
-
-    // Retrieve logged-in user data from the AuthService
-    this.userData = this.authService.getLoggedInUserData(); // Get user data on init
-
-    // Optional: you could log this data to verify it
-    console.log('User Data on Init:', this.userData);
   }
+  
 
   startVideo() {
-    // Start the video stream using getUserMedia API
     navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-      this.mediaStream = stream; // Store the media stream
+      this.mediaStream = stream;
       this.videoElement.nativeElement.srcObject = stream;
     }).catch(error => {
       console.error('Error accessing camera:', error);
+  
+      // Detailed error handling
+      switch (error.name) {
+        case 'NotAllowedError':
+          console.error('Camera access denied by the user.');
+          break;
+        case 'NotFoundError':
+          console.error('No camera device found.');
+          break;
+        case 'NotReadableError':
+          console.error('Camera is already in use by another application.');
+          break;
+        default:
+          console.error('Unknown error accessing the camera:', error);
+          break;
+      }
     });
   }
+  
 
   stopVideo() {
     // Stop all video tracks to release the camera when no longer needed

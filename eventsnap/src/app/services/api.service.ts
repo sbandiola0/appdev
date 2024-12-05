@@ -9,7 +9,7 @@ import { of } from 'rxjs';
 export class ApiService {
 
   // private baseUrl = 'https://api.eventsnap.online/routes.php?request=';
-  private baseUrl = 'http://localhost/eventsnap/backend_php/api/';
+  private baseUrl = 'http://localhost/appdev/appdev/eventsnap/backend_php/api/';
 
   constructor(private http: HttpClient) { }
 
@@ -123,35 +123,34 @@ getEventParticipantsCount(): Observable<any> {
   // }
 
   // Example of improved error handling
-checkEventAttendance(studentId: string, eventId: string): Observable<any> {
-  return this.http.post<any>(`${this.baseUrl}/check-attendance.php`, {
-    student_id: studentId,
-    event_id: eventId
-  }).pipe(
-    catchError(error => {
-      console.error('Check attendance error:', error);
-      return throwError(() => new Error('Failed to check event attendance'));
-    })
-  );
-}
+  
+// checkEventAttendance(studentId: string, eventId: string): Observable<any> {
+//   return this.http.post<any>(`${this.baseUrl}/check-attendance.php`, {
+//     student_id: studentId,
+//     event_id: eventId
+//   }).pipe(
+//     catchError(error => {
+//       console.error('Check attendance error:', error);
+//       return throwError(() => new Error('Failed to check event attendance'));
+//     })
+//   );
+// }
 
   // In api.service.ts
   checkUserEventAttendance(studentId: string, eventId: number): Observable<boolean> {
-    // Retrieve token from local storage
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('userToken');
   
-    // If no token, return false
     if (!token) {
       console.error('No authentication token found');
       return of(false);
     }
   
-    // Include authorization header
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
   
+    // Use query parameters instead of path parameters
     return this.http.get<any>(`${this.baseUrl}check-event-attendance`, {
       headers: headers,
       params: {
@@ -160,33 +159,16 @@ checkEventAttendance(studentId: string, eventId: string): Observable<any> {
       }
     }).pipe(
       map(response => {
-        // Handle different possible response formats
-        if (typeof response === 'boolean') {
-          return response;
-        }
-        if (response && 'hasAttended' in response) {
-          return response.hasAttended;
-        }
-        // Default to false if response doesn't match expected formats
-        return false;
+        return typeof response === 'boolean' ? response : response.hasAttended ?? false;
       }),
       catchError(error => {
-        if (error instanceof HttpErrorResponse) {
-          switch (error.status) {
-            case 403:
-              console.error('Forbidden: Check your authentication', error.error);
-              // Optionally redirect to login or refresh token
-              break;
-            case 401:
-              console.error('Unauthorized: Token may be expired', error.error);
-              // Handle token refresh or logout
-              break;
-          }
-        }
+        console.error('Error checking attendance:', error);
         return of(false);
       })
     );
   }
+  
+  
 
   recordAttendance(data: any): Observable<any> {
     return this.http.post<any>(this.baseUrl + 'record-attendance', data);

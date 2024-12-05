@@ -368,7 +368,7 @@ public function deleteUserAttendance($data) {
     }
 
     // Prepare SQL statement to delete the user attendance record by ID
-    $sql = "DELETE FROM attendance WHERE id = ?";
+    $sql = "DELETE FROM attendance WHERE student_id = ?";
     try {
         // Execute the SQL statement with provided attendance ID
         $statement = $this->pdo->prepare($sql);
