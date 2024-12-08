@@ -554,7 +554,7 @@ public function approvedAttendance($data) {
 
     
   // Example PHP endpoint
-  function checkEventAttendance($studentId, $eventId) {
+  public function checkEventAttendance($studentId, $eventId) {
     global $pdo;
     $query = "SELECT COUNT(*) as attendance_count 
               FROM attendance 
@@ -566,4 +566,68 @@ public function approvedAttendance($data) {
     // Return true if the user has already attended, false otherwise
     return $result['attendance_count'] > 0;
 }
+
+    public function registerForEvent($data) {
+        // Extract data from the request
+        $student_id = isset($data->student_id) ? $data->student_id : null;
+        $event_id = isset($data->event_id) ? $data->event_id : null;
+
+        // Validate required fields
+        if (!$student_id || !$event_id) {
+            return $this->sendPayload(null, "failed", "Student ID and Event ID are required", 400);
+        }
+
+        // Check if the student is already registered for the event
+        $sql = "SELECT * FROM registrants WHERE student_id = ? AND event_id = ?";
+        try {
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$student_id, $event_id]);
+            $existingRegistration = $statement->fetch(PDO::FETCH_ASSOC);
+
+            // If the student is already registered, return the status as "Already Registered"
+            if ($existingRegistration) {
+                return $this->sendPayload($existingRegistration, "success", "You are already registered for this event.", 200);
+            }
+
+            // Fetch additional student data from the database
+            $sql = "SELECT first_name, last_name, email, program FROM user_table WHERE student_id = ?";
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$student_id]);
+            $student = $statement->fetch(PDO::FETCH_ASSOC);
+
+            // Check if student exists
+            if (!$student) {
+                return $this->sendPayload(null, "failed", "Student not found", 400);
+            }
+
+            // Prepare registration data
+            $first_name = $student['first_name'];
+            $last_name = $student['last_name'];
+            $email = $student['email'];
+            $program = $student['program'];
+
+            // Prepare SQL statement to insert registration data
+            $sql = "INSERT INTO registrants (student_id, event_id, last_name, first_name, email, program, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+            
+            // Execute the SQL statement
+            $statement = $this->pdo->prepare($sql);
+            $success = $statement->execute([$student_id, $event_id, $last_name, $first_name, $email, $program]);
+
+            if ($success) {
+                // Return the new registration data with status "Pending"
+                $response = [
+                    'student_id' => $student_id,
+                    'event_id' => $event_id,
+                    'status' => 'Pending'
+                ];
+                return $this->sendPayload($response, "success", "Registration successful.", 200);
+            } else {
+                return $this->sendPayload(null, "failed", "Failed to register.", 400);
+            }
+        } catch (\PDOException $e) {
+            $errmsg = $e->getMessage();
+            return $this->sendPayload(null, "failed", $errmsg, 400);
+        }
+    }
 }

@@ -73,11 +73,27 @@ export class AuthService {
 
   // Method to get logged-in user data
   getLoggedInUserData() {
+    // Retrieve the currentUser JSON string from local storage
+    const currentUserString = localStorage.getItem('currentUser');
+    
+    // Initialize currentUser as an object or null if parsing fails
+    let currentUser = null;
+
+    // Parse the JSON string into an object if it exists
+    if (currentUserString) {
+        try {
+            currentUser = JSON.parse(currentUserString);
+        } catch (error) {
+            console.error("Error parsing currentUser from localStorage:", error);
+        }
+    }
+
+    // Return an object with user data, using the parsed name if available
     return {
-      id: localStorage.getItem('userId'),
-      name: localStorage.getItem('userFirstName')  + ' ' + localStorage.getItem('userLastName'),
-      userId: localStorage.getItem('userId'),
-      course: localStorage.getItem('userCourse')
+        id: localStorage.getItem('userId'),
+        name: currentUser ? currentUser.name : null, // Accessing name from parsed object
+        userId: localStorage.getItem('userId'),
+        course: localStorage.getItem('userCourse')
     };
   }
 

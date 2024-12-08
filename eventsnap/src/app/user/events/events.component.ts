@@ -19,6 +19,7 @@ export class EventsComponent implements OnInit {
   currentDate: Date = new Date();
   eventParticipantsCount: any = {};
   userAttendanceStatus: any;
+  registrationStatus: { [key: number]: string } = {};
 
   constructor(
     private eventsService: ApiService,
@@ -42,12 +43,14 @@ export class EventsComponent implements OnInit {
       next: (events: any[]) => {
         this.events = events;
         console.log('Fetched events:', this.events);
+        // Now that events are fetched, fetch registration statuses
+        this.fetchRegistrationStatuses();
       },
       error: (error) => {
         console.error('Error fetching events:', error);
       }
     });
-  }
+  }  
 
   getAttendedEvents() {
     const userId = localStorage.getItem('userId');
@@ -193,21 +196,91 @@ export class EventsComponent implements OnInit {
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
     if (this.isPastEvent(event.event_date, event.event_end_time)) {
-      // If event is in the past, check the status
-      if (this.isEventApproved(event.event_id)) {
-        return 'View Image'; // If event is approved, allow viewing image
-      } else if (this.isEventPending(event.event_id)) {
-        return 'Pending'; // If event is pending
-      }
-    } else {
-      // Check if user has already attended this event
-      if (this.hasAttendedEvent(event.event_id)) {
-        return 'Attended'; // Indicate that user has already attended
-      }
-      return 'Attend'; // If event is still upcoming
+      return 'Event Ended';  // Event is over
     }
+    return this.isEventApproved(event.event_id) ? 'View Image' : 'Attend';  // If approved, show 'View Image', else 'Attend'
+  }
+  
+  getRegisterButtonLabel(event: any): string {
+    if (this.isPastEvent(event.event_date, event.event_end_time)) {
+      return 'Event Ended';  // Event is in the past, no registration
+    }
+    if (this.isEventPending(event.event_id)) {
+      return 'Pending Approval';  // If event is pending, show 'Pending Approval'
+    }
+    return 'Register';  // Default 'Register' button
+  }  
+  
 
-    // Default return value to ensure the function always returns a string
-    return 'Attend'; // This acts as a fallback return if no conditions are met
+
+  registerForEvent(event: any): void {
+    const studentId = localStorage.getItem('userId'); // Get logged-in student's ID
+    const data = { student_id: studentId, event_id: event.id };
+  
+    this.eventsService.registerForEvent(data).subscribe(
+      (response) => {
+        console.log('Event registration response:', response);
+  
+        // Extract the message from response.status.message
+        const message = response?.status?.message || 'An unexpected error occurred.';
+  
+        // Display the message in the snackbar
+        this.snackBar.open(message, 'Close', {
+          duration: 3000, // 3 seconds
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+  
+        // Refetch the events after successful registration
+        this.fetchEvents(); // Call fetchEvents to update the events list
+      },
+      (error) => {
+        console.error('Event registration failed:', error);
+  
+        // Show an error message in the snackbar
+        this.snackBar.open('Registration failed. Please try again.', 'Close', {
+          duration: 3000, // 3 seconds
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+      }
+    );
+  }
+  
+
+  fetchRegistrationStatuses(): void {
+    const studentId = localStorage.getItem('userId');
+    if (!studentId) {
+      console.warn('No student ID found in localStorage. Skipping registration status fetch.');
+      return;
+    }
+  
+    this.eventsService.getRegistrationStatus(studentId).subscribe(
+      (response) => {
+        console.log('API response for registration statuses:', response);
+        if (response?.status?.remarks === 'success' && Array.isArray(response.payload)) {
+          this.registrationStatus = {};
+          response.payload.forEach((item: any) => {
+            this.registrationStatus[item.event_id] = item.status;
+          });
+        } else {
+          console.warn('Unexpected API response format:', response);
+        }
+      },
+      (error) => {
+        console.error('Error fetching registration statuses:', error);
+        if (error.status) {
+          console.error(`HTTP Status: ${error.status}`);
+        }
+        if (error.message) {
+          console.error(`Error Message: ${error.message}`);
+        }
+      }
+    );
+  }
+  
+  
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj);
   }
 }

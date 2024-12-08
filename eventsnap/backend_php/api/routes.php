@@ -12,6 +12,7 @@ header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
 // Allow specific headers
 header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token, Origin, Authorization');
 
+
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     // Respond to preflight request
@@ -64,6 +65,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($get->get_attendance());
                 break;
                 
+            case 'getRegistrationStatus':
+                header('Content-Type: application/json');
+                echo json_encode($get->getRegistrationStatus());
+                break;
+
                 case 'event-history':
                     // Ensure you are getting the user ID from the request
                     if (isset($request[1])) {
@@ -114,7 +120,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
                                         http_response_code(400); // Bad Request
                                     }
                                     break;
-                                
+                            
+                                    
                                 
                             
                         
@@ -182,6 +189,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'approvedAttendance':
                 echo json_encode($post->approvedAttendance($data));
+                break;
+
+            case 'registerForEvent':
+                echo json_encode($post->registerForEvent($data));
                 break;
 
             default:

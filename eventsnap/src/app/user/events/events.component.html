@@ -1,14 +1,14 @@
 <!-- events.component.html -->
 <app-user></app-user>
 <div class="container">
-  <ng-container *ngIf="events && events.length > 0">
-    <div class="box-container" aria-label="Upcoming Events">
+  <ng-container *ngIf="events && events.length > 0; else noEvents">
+    <div class="box-container" aria-labelledby="upcomingEventsLabel">
+      <h1 id="upcomingEventsLabel" class="sr-only">Upcoming Events</h1>
       <article
         class="boxbox"
         *ngFor="let event of events"
-        [attr.aria-label]="event.event_name"
-        [ngClass]="{'past-event': isPastEvent(event.event_date, event.event_end_time)}">
-
+        [ngClass]="{'past-event': isPastEvent(event.event_date, event.event_end_time)}"
+      >
         <div class="event-card">
           <figure class="event-image-container">
             <img
@@ -27,52 +27,71 @@
 
             <div class="event-details">
               <p class="event-location">
-                <span class="sr-only">Location:</span>
-                {{ event.location }}
+                <strong>Location:</strong> {{ event.location }}
               </p>
 
-              <p class="event-location" *ngIf="event.exclusive_for">
-                <span class="sr-only">Exclusive for:</span>
-                {{ event.exclusive_for }}
+              <p class="event-exclusive" *ngIf="event.exclusive_for">
+                <strong>Exclusive for:</strong> {{ event.exclusive_for }}
               </p>
 
               <div class="event-datetime">
                 <p class="event-date">
-                  <span class="sr-only">Date:</span>
-                  {{ event.event_date | date: 'MMM dd, yyyy' }}
+                  <strong>Date:</strong> {{ event.event_date | date: 'MMM dd, yyyy' }}
                 </p>
                 <p class="event-time">
-                  <span class="sr-only">Time:</span>
+                  <strong>Time:</strong>
                   {{ formatEventDateTime(event.event_date, event.event_start_time) }} -
                   {{ formatEventDateTime(event.event_date, event.event_end_time) }}
                 </p>
               </div>
             </div>
-
+            
             <footer class="event-footer">
-              <span
-                class="participant-count"
-                [attr.aria-label]="getApprovedCount(event) + ' participants out of 40'"
-              >
-                {{ getApprovedCount(event) }}/40 Participants
-              </span>
+              <p class="participant-count">
+                <strong>Participants:</strong> {{ getApprovedCount(event) }}/40
+              </p>
+              <p class="registration-status"
+              [ngClass]="{
+                  'text-orange-500': registrationStatus[event.id] === 'Pending',
+                  'text-green-500': registrationStatus[event.id] === 'Approved',
+                  'text-red-500': registrationStatus[event.id] === 'Rejected'
+              }">
+              <strong>Status:</strong> {{ registrationStatus[event.id] || 'Not Registered' }}
+              </p>
+                  
 
+              <!-- Button for Approved or Past Events -->
               <button
+                *ngIf="isEventApproved(event.event_id) || isPastEvent(event.event_date, event.event_end_time)"
                 class="attend-button"
-                [disabled]="getButtonLabel(event) !== 'Attend'"
+                [disabled]="isPastEvent(event.event_date, event.event_end_time)"
                 (click)="attendEvent(event)"
-                [attr.aria-label]="getButtonLabel(event)"
               >
                 {{ getButtonLabel(event) }}
               </button>
+
+              <!-- Button for Registering for Events -->
+              <button
+              *ngIf="!hasAttendedEvent(event.event_id) && !isEventPending(event.event_id) && !isPastEvent(event.event_date, event.event_end_time)"
+              class="attend-button"
+              (click)="registerForEvent(event)"
+              >
+              {{ getRegisterButtonLabel(event) }}
+              </button>
+
+            
+
             </footer>
           </div>
         </div>
       </article>
     </div>
+  </ng-container>
 
-    <div *ngIf="events.length === 0" class="no-events">
+  <!-- Fallback when no events are available -->
+  <ng-template #noEvents>
+    <div class="no-events">
       <p>No upcoming events at the moment.</p>
     </div>
-  </ng-container>
+  </ng-template>
 </div>

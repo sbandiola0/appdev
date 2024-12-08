@@ -150,20 +150,47 @@ class Get extends GlobalMethods {
     // }
 
     public function checkUserEventAttendance($studentId, $eventId) {
-      try {
-          $sql = "SELECT 1 FROM (
-              SELECT student_id, event_id FROM attendance 
-              UNION 
-              SELECT student_id, event_id FROM approved_participants
-          ) combined WHERE student_id = ? AND event_id = ? LIMIT 1";
-          
-          $stmt = $this->pdo->prepare($sql);
-          $stmt->execute([$studentId, $eventId]);
-          return $stmt->fetch() ? true : false;
-      } catch (PDOException $e) {
-          // Log error or handle appropriately
-          return false;
-      }
-  } 
+        try {
+            $sql = "SELECT 1 FROM (
+                SELECT student_id, event_id FROM attendance 
+                UNION 
+                SELECT student_id, event_id FROM approved_participants
+            ) combined WHERE student_id = ? AND event_id = ? LIMIT 1";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$studentId, $eventId]);
+            return $stmt->fetch() ? true : false;
+        } catch (PDOException $e) {
+            // Log error or handle appropriately
+            return false;
+        }
+    } 
 
+    public function getRegistrationStatus() {
+        // Access student_id directly from the query string
+        $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
+    
+        // Validate required fields
+        if (!$student_id) {
+            return $this->sendPayload(null, "failed", "Student ID is required", 400);
+        }
+    
+        // Fetch registration status from the database for all events the student is registered for
+        $sql = "SELECT event_id, status FROM registrants WHERE student_id = ?";
+        try {
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute([$student_id]);
+            $registrations = $statement->fetchAll(PDO::FETCH_ASSOC);
+    
+            // Check if any registration records are found
+            if ($registrations) {
+                return $this->sendPayload($registrations, "success", "Registration status found.", 200);
+            } else {
+                return $this->sendPayload(null, "failed", "No registrations found for this student.", 400);
+            }
+        } catch (\PDOException $e) {
+            $errmsg = $e->getMessage();
+            return $this->sendPayload(null, "failed", $errmsg, 400);
+        }
+    }    
 }

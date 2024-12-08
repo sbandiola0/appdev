@@ -191,10 +191,28 @@ getEventParticipantsCount(): Observable<any> {
   }
 
   getUserApprovedAttendance(userId: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/approved_attendance/${userId}`);
+    return this.http.get<any>(`${this.baseUrl}approved_attendance/${userId}`);
   }
 
   getUserCapturedImage(userId: string, eventId: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/get-captured-image/${userId}/${eventId}`);
+    return this.http.get<any>(`${this.baseUrl}get-captured-image/${userId}/${eventId}`);
+  }
+
+  registerForEvent(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}registerForEvent`, data).pipe(
+      catchError((error) => {
+        console.error("Registration error:", error);
+        return throwError(() => new Error('Event registration failed'));
+      })
+    );
+  }
+
+  getRegistrationStatus(studentId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}getRegistrationStatus?student_id=${studentId}`).pipe(
+      catchError((error) => {
+        console.error('Error fetching registration status:', error);
+        return throwError(() => new Error('Error fetching registration status'));
+      })
+    );
   }
 }
