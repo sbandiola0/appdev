@@ -18,7 +18,8 @@ import { UserAuthGuard } from './services/user-auth.guard';
 import { EditUserModalComponent } from './admin/students/edit-user-modal/edit-user-modal.component';
 import { HistoryComponent } from './user/history/history.component';
 import { AboutComponent } from './user/about/about.component';
-import { EventRegistrationComponent } from './user/event-registration/event-registration.component';
+import { EventRegistrationComponent } from './admin/event-registration/event-registration.component';
+
 
 export const routes: Routes = [
   { path: 'adminstudent', component: AdminstudentComponent  },

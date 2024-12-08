@@ -12,6 +12,9 @@ import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { EditEventDialogComponent } from './edit-event-dialog/edit-event-dialog.component';
 import { AddEventModalComponent } from './add-event-modal/add-event-modal.component';
 import { Router } from '@angular/router';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { EventRegistrationComponent } from '../event-registration/event-registration.component';
 
 @Component({
   selector: 'app-event',
@@ -93,6 +96,31 @@ export class EventComponent implements OnInit {
             if (response && response.status && response.status.remarks === 'failed') {
               console.error('Failed to update user.', response.status.message);
               this.router.navigate(['/event']);
+            } else {
+              // Handle success
+            }
+          },
+          (error) => {
+            console.error('Error updating user', error);
+          }
+        );
+      }
+    });
+  }
+
+  openRegistrantsComponent(): void {
+    const dialogRef = this.dialog.open(EventRegistrationComponent, {
+      width: '1000px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.apiService.addEvent(result).subscribe(
+          (response: any) => {
+            if (response && response.status && response.status.remarks === 'failed') {
+              console.error('Failed to update user.', response.status.message);
+              this.router.navigate(['/event-registration']);
             } else {
               // Handle success
             }

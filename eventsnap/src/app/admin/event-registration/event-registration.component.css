@@ -1,0 +1,21 @@
+:root {
+  --primary-color: #A68BC3;  /* Soft pastel purple */
+  --background-color: #F5F5F5;  /* Soft off-white */
+  --text-color: #333;
+  --secondary-color: #E6E6FA;  /* Lavender pastel */
+  --accent-color: #D8BFD8;  /* Soft pink-purple */
+  --border-color: #CAB8D6;  /* Muted purple */
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.container {
+  background-color: var(--secondary-color);
+  border-radius: 12px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  transition: all 0.3s ease;
+}
