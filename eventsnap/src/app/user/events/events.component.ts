@@ -129,6 +129,11 @@ export class EventsComponent implements OnInit {
       this.snackBar.open('Please log in to attend events', 'Close', { duration: 3000 });
       return;
     }
+
+    if (this.registrationStatus[event.id] === 'Pending') {
+      this.snackBar.open('You are pending for Approval', 'Close', { duration: 3000 });
+      return;
+    }
   
     // Additional check to prevent multiple event attendance
     this.eventsService.checkUserEventAttendance(userId, event.id).subscribe({
@@ -151,7 +156,7 @@ export class EventsComponent implements OnInit {
   
         // Proceed with event registration if all checks pass
         localStorage.setItem('selectedEvent', JSON.stringify(event));
-        this.router.navigate(['/event-registration']);
+        this.router.navigate(['/image-capture']);
       },
       error: (error) => {
         console.error('Error checking event attendance:', error);
@@ -195,22 +200,23 @@ export class EventsComponent implements OnInit {
 
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
+    // Check if the event has ended
     if (this.isPastEvent(event.event_date, event.event_end_time)) {
-      return 'Event Ended';  // Event is over
+      return 'Event Ended';  // Display 'Event Ended' if the event is over
     }
-    return this.isEventApproved(event.event_id) ? 'View Image' : 'Attend';  // If approved, show 'View Image', else 'Attend'
-  }
   
-  getRegisterButtonLabel(event: any): string {
-    if (this.isPastEvent(event.event_date, event.event_end_time)) {
-      return 'Event Ended';  // Event is in the past, no registration
+    // Check if the event is approved
+    const status = this.registrationStatus[event.id];
+    if (status === 'Approved') {
+      return 'Submit Attendance';  // Only show 'Attend' if the event is approved
     }
-    if (this.isEventPending(event.event_id)) {
-      return 'Pending Approval';  // If event is pending, show 'Pending Approval'
+  
+    if (status === 'Pending') {
+      return 'Pending Approval';  // If pending, show 'Pending Approval'
     }
-    return 'Register';  // Default 'Register' button
+  
+    return 'Register';  // Default to 'Register' if no status is found
   }  
-  
 
 
   registerForEvent(event: any): void {

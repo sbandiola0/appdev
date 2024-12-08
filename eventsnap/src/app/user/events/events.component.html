@@ -60,27 +60,14 @@
               </p>
                   
 
-              <!-- Button for Approved or Past Events -->
               <button
-                *ngIf="isEventApproved(event.event_id) || isPastEvent(event.event_date, event.event_end_time)"
-                class="attend-button"
-                [disabled]="isPastEvent(event.event_date, event.event_end_time)"
-                (click)="attendEvent(event)"
-              >
-                {{ getButtonLabel(event) }}
-              </button>
-
-              <!-- Button for Registering for Events -->
-              <button
-              *ngIf="!hasAttendedEvent(event.event_id) && !isEventPending(event.event_id) && !isPastEvent(event.event_date, event.event_end_time)"
               class="attend-button"
-              (click)="registerForEvent(event)"
-              >
-              {{ getRegisterButtonLabel(event) }}
-              </button>
-
+              [disabled]="isPastEvent(event.event_date, event.event_end_time)"
+              (click)="getButtonLabel(event) === 'Register' ? registerForEvent(event) : attendEvent(event)"
+            >
+              {{ getButtonLabel(event) }}
+            </button>            
             
-
             </footer>
           </div>
         </div>
