@@ -156,13 +156,16 @@ class Get extends GlobalMethods {
     }
 
     public function countApprovedParticipants() {
-        $sql = "SELECT event_name, COUNT(*) AS approved_count FROM approved_participants GROUP BY event_name";
-
+        $sql = "SELECT event_id, COUNT(*) AS approved_count
+                FROM registrants
+                WHERE status = 'approved'
+                GROUP BY event_id";
+    
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    
             if ($result) {
                 return [
                     "status" => "success",
@@ -180,7 +183,7 @@ class Get extends GlobalMethods {
                 "message" => $e->getMessage()
             ];
         }
-    }
+    }    
 
     public function countParticipantsForEvents() {
         // SQL query to count the number of participants for each event

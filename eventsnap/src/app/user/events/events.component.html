@@ -64,13 +64,13 @@
                   registrationStatus[event.id] || 'Not Registered' }}
             </p>
             
-            <button
+              <button
               class="attend-button"
-              [disabled]="isPastEvent(event.event_date, event.event_end_time)"
-              (click)="getButtonLabel(event) === 'Register' ? registerForEvent(event) : viewSubmission(event)"
+              [disabled]="isPastEvent(event.event_date, event.event_end_time) || registrationStatus[event.id] === 'Rejected'"
+              (click)="handleButtonClick(event)"
             >
               {{ getButtonLabel(event) }}
-            </button>                                 
+            </button>                                       
             
             </footer>
           </div>

@@ -148,9 +148,12 @@ export class EventsComponent implements OnInit {
       this.snackBar.open('Please log in to attend events', 'Close', { duration: 3000 });
       return;
     }
-
+  
+    console.log('Event ID:', event.id);
+    console.log('Current registration status:', this.registrationStatus[event.id]);
+  
     if (this.registrationStatus[event.id] === 'Pending') {
-      this.snackBar.open('You are pending for Approval', 'Close', { duration: 3000 });
+      this.snackBar.open('You are pending for approval', 'Close', { duration: 3000 });
       return;
     }
   
@@ -158,18 +161,17 @@ export class EventsComponent implements OnInit {
     this.eventsService.checkUserEventAttendance(userId, event.id).subscribe({
       next: (hasAttended) => {
         if (hasAttended) {
-          this.snackBar.open('You have already attended this event', 'Close', {
-            duration: 3000
-          });
+          console.log('User has already attended this event');
+          this.snackBar.open('You have already attended this event', 'Close', { duration: 3000 });
           return;
         }
   
         // Check event capacity
         const approvedCount = this.getApprovedCount(event);
+        console.log('Approved participant count:', approvedCount);
         if (approvedCount >= (event.max_participants || Infinity)) {
-          this.snackBar.open('This event has reached maximum capacity', 'Close', {
-            duration: 3000
-          });
+          console.log('Event is at maximum capacity');
+          this.snackBar.open('This event has reached maximum capacity', 'Close', { duration: 3000 });
           return;
         }
   
@@ -179,12 +181,10 @@ export class EventsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error checking event attendance:', error);
-        this.snackBar.open('An error occurred. Please try again.', 'Close', {
-          duration: 3000
-        });
+        this.snackBar.open('An error occurred. Please try again.', 'Close', { duration: 3000 });
       }
     });
-  }
+  }  
 
   updateTime() {
     this.currentDate = new Date();
@@ -214,8 +214,8 @@ export class EventsComponent implements OnInit {
   }
 
   getApprovedCount(event: any): number {
-    return this.eventParticipantsCount[event.event_name] || 0;
-  }
+    return this.eventParticipantsCount[event.event_id] || 0;
+  }  
 
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
@@ -224,25 +224,44 @@ export class EventsComponent implements OnInit {
       return 'Event Ended';
     }
   
-    // If user has attended, change the button label to 'View Submission'
+    // Check if the user has already attended the event
     const status = this.registrationStatus[event.id];
     if (status === 'Attended') {
-      return 'View Submission';
+      return 'View Submission'; // Only show this after the user has attended
     }
   
-    // If event is approved, show 'Submit Attendance'
+    // If the event is approved, show 'Submit Attendance'
     if (status === 'Approved') {
       return 'Submit Attendance';
     }
   
+    // If the event is pending, show 'Pending Approval'
     if (status === 'Pending') {
       return 'Pending Approval';
     }
-  
+
+    if (status === 'Rejected') {
+      return 'Cannot Attend Event';
+    }
+    
     // Default to 'Register' if no status is found
     return 'Register';
   }
 
+  handleButtonClick(event: any) {
+    const buttonLabel = this.getButtonLabel(event);
+  
+    if (buttonLabel === 'Register') {
+      this.registerForEvent(event); // Register if not yet registered
+    } else if (buttonLabel === 'View Submission') {
+      this.viewSubmission(event); // Navigate to submission details if attended
+    } else if (buttonLabel === 'Submit Attendance') {
+      this.attendEvent(event); // Handle attendance submission
+    } else if (buttonLabel === 'Pending Approval') {
+      this.snackBar.open('Your registration is pending approval.', 'Close', { duration: 3000 });
+    }
+  }
+  
 
   registerForEvent(event: any): void {
     const studentId = localStorage.getItem('userId'); // Get logged-in student's ID
@@ -261,6 +280,12 @@ export class EventsComponent implements OnInit {
           horizontalPosition: 'center',
           verticalPosition: 'bottom',
         });
+  
+        // Check if the registration was successful and approved
+        if (response.status === 'approved') {
+          // Increment the approved participant count for the event
+          this.eventParticipantsCount[event.event_name] = (this.eventParticipantsCount[event.event_name] || 0) + 1;
+        }
   
         // Refetch the events after successful registration
         this.fetchEvents(); // Call fetchEvents to update the events list
@@ -292,7 +317,7 @@ export class EventsComponent implements OnInit {
         if (response?.status?.remarks === 'success' && Array.isArray(response.payload)) {
           this.registrationStatus = {};
           response.payload.forEach((item: any) => {
-            this.registrationStatus[item.event_id] = item.status;
+            this.registrationStatus[item.event_id] = item.status; // Make sure the event_id and status are correct
           });
         } else {
           console.warn('Unexpected API response format:', response);
@@ -300,17 +325,10 @@ export class EventsComponent implements OnInit {
       },
       (error) => {
         console.error('Error fetching registration statuses:', error);
-        if (error.status) {
-          console.error(`HTTP Status: ${error.status}`);
-        }
-        if (error.message) {
-          console.error(`Error Message: ${error.message}`);
-        }
       }
     );
-  }
-  
-  
+  }  
+    
   objectKeys(obj: any): string[] {
     return Object.keys(obj);
   }
