@@ -108,30 +108,24 @@ export class EventComponent implements OnInit {
     });
   }
 
-  openRegistrantsComponent(): void {
+  openRegistrantsComponent(eventId: number): void {
+    // Open the dialog and pass the eventId as data
     const dialogRef = this.dialog.open(EventRegistrationComponent, {
       width: '1000px',
-      data: {}
+      data: { eventId },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    // After the dialog is closed, you can handle any result (if necessary)
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.apiService.addEvent(result).subscribe(
-          (response: any) => {
-            if (response && response.status && response.status.remarks === 'failed') {
-              console.error('Failed to update user.', response.status.message);
-              this.router.navigate(['/event-registration']);
-            } else {
-              // Handle success
-            }
-          },
-          (error) => {
-            console.error('Error updating user', error);
-          }
-        );
+        // Handle the result if needed, e.g., if new registrations are added
+        console.log('Registrants dialog closed with result:', result);
+      } else {
+        console.log('Registrants dialog closed without result.');
       }
     });
-  }
+}
+  
 
   deleteEvent(event: any): void {
     if (confirm(`Are you sure you want to delete the event: ${event.event_name}?`)) {

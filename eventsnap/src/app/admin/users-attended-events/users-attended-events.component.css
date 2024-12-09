@@ -56,8 +56,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  color:#A68BC3;
+  color: #A68BC3;
+  height: auto;  /* Ensure it expands with content */
 }
+
 
 .event-section {
   background-color: var(--secondary-color);

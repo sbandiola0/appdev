@@ -1,128 +1,111 @@
 <div class="container mt-0 p-4">
   <mat-tab-group>
     <mat-tab label="Registrants">
-      
-    </mat-tab>
-    <mat-tab label="Attendance Approval">
       <div class="header">
         <h2 class="section-title">Event Attendance Management</h2>
       </div>
-  
-      <!-- Events Container -->
-      <div class="events-container">
-        <!-- Iterate through unique events -->
-        <div *ngFor="let event of uniqueEvents" class="event-section">
-          <div class="event-header">
-            <h3>{{ event.event_name }}</h3>
-            <p class="event-date">Date: {{ event.event_date }}</p>
-          </div>
-  
-          <div class="attendance-section">
-            <div class="attendance-details">
-              <!-- Pending Attendance -->
-              <div class="pending-attendance" *ngIf="getPendingAttendanceForEvent(event.event_name).length > 0">
-                <h4>Pending Attendance</h4>
-                <mat-table [dataSource]="getPendingAttendanceForEvent(event.event_name)" matSort>
-                  <ng-container matColumnDef="student_id">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Student ID</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">{{ attendance.student_id }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="last_name">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">{{ attendance.last_name }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="first_name">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>First Name</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">{{ attendance.first_name }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="program">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Program</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">{{ attendance.program }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="timestamp">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Timestamp</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">{{ attendance.timestamp }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="image">
-                    <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance" style="cursor: pointer;">
-                      <img [src]="attendance.image" alt="Attendance Image" class="attendance-image">
-                    </mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="actions">
-                    <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-                    <mat-cell *matCellDef="let attendance">
-                      <button mat-icon-button color="primary" (click)="approvedAttendance(attendance)">
-                        <mat-icon>check_circle</mat-icon>
-                      </button>
-                      <button mat-icon-button color="warn" (click)="deleteUserAttendance(attendance.student_id)">
-                        <mat-icon>delete</mat-icon>
-                      </button>
-                    </mat-cell>
-                  </ng-container>
-  
-                  <mat-header-row *matHeaderRowDef="pendingColumns"></mat-header-row>
-                  <mat-row *matRowDef="let attendance; columns: pendingColumns"></mat-row>
-                </mat-table>
-                <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
-              </div>
-  
-              <!-- Approved Attendance -->
-              <div class="approved-attendance" *ngIf="getApprovedAttendanceForEvent(event.event_name).length > 0">
-                <h4>Approved Attendance</h4>
-                <mat-table [dataSource]="getApprovedAttendanceForEvent(event.event_name)" matSort>
-                  <ng-container matColumnDef="student_id">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Student ID</mat-header-cell>
-                    <mat-cell *matCellDef="let approved">{{ approved.student_id }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="last_name">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
-                    <mat-cell *matCellDef="let approved">{{ approved.last_name }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="first_name">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>First Name</mat-header-cell>
-                    <mat-cell *matCellDef="let approved">{{ approved.first_name }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="program">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Program</mat-header-cell>
-                    <mat-cell *matCellDef="let approved">{{ approved.program }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="timestamp">
-                    <mat-header-cell *matHeaderCellDef mat-sort-header>Timestamp</mat-header-cell>
-                    <mat-cell *matCellDef="let approved">{{ approved.timestamp }}</mat-cell>
-                  </ng-container>
-  
-                  <ng-container matColumnDef="image">
-                    <mat-header-cell *matHeaderCellDef>Image</mat-header-cell>
-                    <mat-cell *matCellDef="let approved" style="cursor: pointer;">
-                      <img [src]="approved.image" alt="Approved Attendance Image" class="attendance-image">
-                    </mat-cell>
-                  </ng-container>
-  
-                  <mat-header-row *matHeaderRowDef="approvedColumns"></mat-header-row>
-                  <mat-row *matRowDef="let approved; columns: approvedColumns"></mat-row>
-                </mat-table>
-                <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons></mat-paginator>
-              </div>
-  
-              <!-- No Attendance Message -->
-              <div *ngIf="isEventWithoutAttendance(event.event_name)" class="no-attendance">
-                <p>No attendance records for this event.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort>
+          <!-- Student ID Column -->
+          <ng-container matColumnDef="student_id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Student ID</th>
+            <td mat-cell *matCellDef="let element">{{ element.student_id }}</td>
+          </ng-container>
+      
+          <!-- Last Name Column -->
+          <ng-container matColumnDef="last_name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.last_name }}</td>
+          </ng-container>
+      
+          <!-- First Name Column -->
+          <ng-container matColumnDef="first_name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.first_name }}</td>
+          </ng-container>
+      
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+            <td mat-cell *matCellDef="let element">{{ element.status }}</td>
+          </ng-container>
+      
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-button color="primary" (click)="updateStatus(element.student_id, element.event_id, 'Approved')">Approve</button>
+              <button mat-button color="warn" (click)="updateStatus(element.student_id, element.event_id, 'Rejected')">Reject</button>
+            </td>
+          </ng-container>
+      
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+        
+        <!-- Paginator -->
+        <mat-paginator
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+      
+    </mat-tab>
+
+    <mat-tab label="Attendance Approval">
+      <div class="header">
+        <h2 class="section-title">Attendance Approval</h2>
+      </div>
+
+      <div class="table-container">
+        <!-- Attendance Table -->
+        <table mat-table [dataSource]="attendanceDataSource" matSort>
+          <!-- Student ID Column -->
+          <ng-container matColumnDef="student_id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Student ID</th>
+            <td mat-cell *matCellDef="let element">{{ element.student_id }}</td>
+          </ng-container>
+
+          <!-- Last Name Column -->
+          <ng-container matColumnDef="last_name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.last_name }}</td>
+          </ng-container>
+
+          <!-- First Name Column -->
+          <ng-container matColumnDef="first_name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+            <td mat-cell *matCellDef="let element">{{ element.first_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>Image</th>
+            <td mat-cell *matCellDef="let element">
+              <img [src]="element.image" alt="Attendance Image" class="attendance-image">
+              <span *ngIf="!element.image">No Image</span>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-button color="primary" (click)="updateStatus(element.student_id, element.event_id, 'Approved')">Approve</button>
+              <button mat-button color="warn" (click)="updateStatus(element.student_id, element.event_id, 'Rejected')">Reject</button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="attendanceDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: attendanceDisplayedColumns;"></tr>
+        </table>
+        
+        <!-- Paginator -->
+        <mat-paginator
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons>
+        </mat-paginator>
       </div>
     </mat-tab>
-  </mat-tab-group>  
+  </mat-tab-group>
 </div>

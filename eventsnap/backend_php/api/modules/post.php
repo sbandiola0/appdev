@@ -630,4 +630,39 @@ public function approvedAttendance($data) {
             return $this->sendPayload(null, "failed", $errmsg, 400);
         }
     }
+
+
+    public function updateRegistrantStatus($data) {
+        // Check if required fields are present
+        $requiredFields = ['student_id', 'event_id', 'status'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data->$field)) {
+                return $this->sendPayload(null, "failed", "Missing required fields: $field", 400);
+            }
+        }
+    
+        // Prepare SQL statement to update the user
+        $sql = "UPDATE registrants SET status = ? WHERE student_id = ? AND event_id = ?";
+        try {
+            // Execute the SQL statement with provided data
+            $statement = $this->pdo->prepare($sql);
+            $success = $statement->execute([
+                $data->status,
+                $data->student_id,
+                $data->event_id
+            ]);
+    
+            if ($success) {
+                // Return success response with a 200 status code
+                return $this->sendPayload(null, "success", "Status updated successfully.", 200);
+            } else {
+                // Return failure response with a 400 status code
+                return $this->sendPayload(null, "failed", "Failed to update status.", 400);
+            }
+        } catch (\PDOException $e) {
+            $errmsg = $e->getMessage();
+            $code = 400;
+            return $this->sendPayload(null, "failed", $errmsg, $code);
+        }
+    }
 }

@@ -12,6 +12,7 @@ header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
 // Allow specific headers
 header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token, Origin, Authorization');
 
+header("Content-Type: application/json");
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -57,6 +58,16 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($get->get_events());
                 break;
 
+            case 'get-registrants':
+                if (isset($request[1])) {
+                    // Call the method in the Get class
+                echo json_encode($get->get_registrants($request[1]));
+            } else {
+                echo json_encode(array('error' => 'event ID is required.'));
+                http_response_code(400); // Bad Request
+            }
+                break;
+
             case 'users':
                 echo json_encode($get->get_users());
                 break;
@@ -65,6 +76,18 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 echo json_encode($get->get_attendance());
                 break;
                 
+                case 'getAttendanceById':
+                    if (isset($request[1]) && !empty($request[1])) {
+                        echo json_encode($get->get_attendance_by_id($request[1]));
+                    } else {
+                        echo json_encode(array(
+                            'status' => array('remarks' => 'failed', 'message' => 'Event ID is required.')
+                        ));
+                        http_response_code(400); // Bad Request
+                    }
+                    break;
+                
+
             case 'getRegistrationStatus':
                 header('Content-Type: application/json');
                 echo json_encode($get->getRegistrationStatus());
@@ -193,6 +216,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'registerForEvent':
                 echo json_encode($post->registerForEvent($data));
+                break;
+
+            case 'updateRegistrantStatus':
+                echo json_encode($post->updateRegistrantStatus($data));
                 break;
 
             default:

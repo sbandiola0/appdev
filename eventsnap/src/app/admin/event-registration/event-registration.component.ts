@@ -1,5 +1,5 @@
 import { ApiService } from './../../services/api.service';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder,} from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,10 +13,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 interface EventInfo {
   event_name: string;
   event_date: string;
+  id: string;
 }
 
 @Component({
@@ -36,238 +38,127 @@ interface EventInfo {
   styleUrls: ['./event-registration.component.css']
 })
 export class EventRegistrationComponent implements OnInit {
-  pendingColumns: string[] = ['student_id', 'last_name', 'first_name', 'program', 'timestamp', 'image', 'actions'];
-  approvedColumns: string[] = ['student_id', 'last_name', 'first_name', 'program', 'timestamp', 'image'];
+  displayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'status', 'actions'];
+  attendanceDataSource = new MatTableDataSource<any>();
+  attendanceDisplayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'image', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
-  pageSizeOptions = [5, 10, 20];
-  approvedDataSource = new MatTableDataSource<any>([]);
-
-    // pageSizeOptions = [5, 10, 20];
-    uniqueEvents: EventInfo[] = [];
-    allEvents: EventInfo[] = [];
-
-    
-  @ViewChild(MatPaginator) paginator!: MatPaginator; // Paginator reference
-  @ViewChild(MatSort) sort!: MatSort; // Sort reference
-  @ViewChild('approvedPaginator') approvedPaginator!: MatPaginator;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService,
     private apiService: ApiService,
     private snackBar: MatSnackBar,
     private sanitizer: DomSanitizer,
-  ) {
-  }
-
+    @Inject(MAT_DIALOG_DATA) public data: { eventId: number } // Injected eventId
+  ) {}
 
   ngOnInit(): void {
-    this.fetchAttendance();
-    this.fetchApprovedParticipants();
-    this.fetchEvents();
+    this.fetchRegistrants();
+    this.getAttendance();
   }
 
-    fetchEvents() {
-      this.apiService.getEvents().subscribe({
-        next: (events: any[]) => {
-          console.log('Raw Events Response:', events);
-    
-          if (!events || events.length === 0) {
-            console.warn('NO EVENTS: Empty or null response received');
-            this.snackBar.open('No events found in database', 'Close', { duration: 3000 });
-            return;
-          }
-    
-          this.allEvents = events.map(event => ({
-            event_name: event.event_name,
-            event_date: event.event_date
-          }));
-    
-          console.log('Processed Events:', this.allEvents);
-        },
-        error: (error) => {
-          console.error('DETAILED Events Fetch Error:', error);
-          console.error('Error Details:', {
-            message: error.message,
-            status: error.status,
-            statusText: error.statusText,
-            url: error.url
-          });
-          this.snackBar.open('Failed to load events', 'Close', { duration: 3000 });
-        }
-      });
-    }  
+// Modify your `getAttendance` method to handle the presence of the image property
+getAttendance() {
+  const eventId = this.data.eventId;
 
-    fetchAttendance() {
-      this.apiService.getAttendance().subscribe(
-        (response: any) => {
-          if (response && response.code === 200) {
-            this.dataSource.data = Array.isArray(response.data)
-              ? response.data.map((item: any) => {
-                  console.log('Attendance Record:', item); // Debugging: log each attendance record
-    
-                  // Validate that the image string is not empty and in the correct format
-                  const base64Pattern = /^data:image\/(png|jpeg|jpg);base64,/;
-                  if (item.image && base64Pattern.test(item.image)) {
-                    return {
-                      ...item,
-                      image: this.sanitizer.bypassSecurityTrustUrl(item.image), // No need to prepend 'data:image/jpeg;base64,' again
-                      // Ensure attendance ID is correctly passed along with each record
-                      attendanceId: item.id // Add a field for attendance ID
-                    };
-                  } else {
-                    console.warn('Invalid Image Data:', item.image);
-                    return { ...item, image: '', attendanceId: item.id }; // Add attendanceId if image is invalid
-                  }
-                })
-              : [];
-            this.dataSource.paginator = this.paginator;
-            this.dataSource.sort = this.sort;
-          } else {
-            console.error('Failed to fetch Attendance.', response ? response.errmsg : 'Unknown error');
-          }
-        },
-        (error) => {
-          console.error('Error fetching Attendance', error);
-        }
-      );
+  this.apiService.getAttendanceById(eventId).subscribe(
+    (response: any) => {
+      if (response && response.status?.remarks === 'success') {
+        const base64Pattern = /^data:image\/(png|jpeg|jpg);base64,/;
+
+        // Process the attendance records
+        const attendanceData = Array.isArray(response.data)
+          ? response.data.map((item: any) => {
+              // Check if the image exists and is a valid base64 format
+              if (item.image && base64Pattern.test(item.image)) {
+                return {
+                  ...item,
+                  image: this.sanitizer.bypassSecurityTrustUrl(item.image), // No need to prepend 'data:image/jpeg;base64,' again
+                  attendanceId: item.id, // Include attendance ID
+                };
+              } else {
+                console.warn('Invalid Image Data:', item.image);
+                return { ...item, image: '', attendanceId: item.id }; // Handle invalid image
+              }
+            })
+          : [];
+
+        console.log('Processed Attendance Data:', attendanceData);
+
+        // Assign to dataSource
+        this.attendanceDataSource.data = attendanceData;
+
+        // Attach paginator and sorter
+        this.attendanceDataSource.paginator = this.paginator;
+        this.attendanceDataSource.sort = this.sort;
+      } else {
+        console.error('Failed to fetch attendance data:', response?.status?.message || 'Unknown error');
+        this.snackBar.open('Failed to fetch attendance data.', 'Close', { duration: 3000 });
+      }
+    },
+    (error: HttpErrorResponse) => {
+      console.error('Error fetching attendance:', error);
+      this.snackBar.open('Failed to fetch attendance data.', 'Close', { duration: 3000 });
     }
-    
-    
+  );
+}
 
-    fetchApprovedParticipants() {
-      this.apiService.getApprovedParticipants().subscribe({
-        next: (response: any) => {
-          console.log('Raw Approved Participants Response:', response);
-    
-          if (!response || (response.code !== 200 && !response.data)) {
-            console.warn('NO APPROVED PARTICIPANTS: Empty or invalid response');
-            this.snackBar.open('No approved participants found', 'Close', { duration: 3000 });
-            return;
-          }
-    
-          this.approvedDataSource.data = response.data || [];
-          this.updateUniqueEvents();
-        },
-        error: (error) => {
-          console.error('DETAILED Approved Participants Error:', error);
-          console.error('Error Details:', {
-            message: error.message,
-            status: error.status,
-            statusText: error.statusText,
-            url: error.url
-          });
-          this.snackBar.open('Failed to load approved participants', 'Close', { duration: 3000 });
+
+
+
+
+
+
+
+  fetchRegistrants() {
+    const eventId = this.data.eventId; // Use the injected eventId
+    this.apiService.getRegistrants(eventId).subscribe(
+      (response: any) => {
+        // Directly access the array from the response
+        const registrantsData = response.map((item: any) => ({
+          ...item,
+          image: this.sanitizer.bypassSecurityTrustUrl(item.image),
+        }));
+  
+        // Filter data based on the eventId
+        this.dataSource.data = registrantsData.filter((registrant: any) =>
+          Number(registrant.event_id) === Number(eventId) // Ensure type safety
+        );
+  
+        // Attach paginator and sorter
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+  
+        console.log('Filtered Registrants:', this.dataSource.data);
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching registrants:', error);
+        this.snackBar.open('Failed to fetch registrants.', 'Close', { duration: 3000 });
+      }
+    );
+  }   
+
+  updateStatus(studentId: number, eventId: number, status: string) {
+    const data = {
+      student_id: studentId,
+      event_id: eventId,
+      status: status,
+    };
+  
+    this.apiService.updateRegistrantStatus(data).subscribe(
+      (response: any) => {
+        // Check if the response has a 'status' object and if 'remarks' is 'success'
+        if (response && response.status && response.status.remarks === "success") {
+          this.snackBar.open(`Status updated to ${status}`, 'Close', { duration: 3000 });
+          this.fetchRegistrants(); // Refresh the data after updating
+        } else {
+          this.snackBar.open(response.status.message || 'Failed to update status.', 'Close', { duration: 3000 });
         }
-      });
-    }
-
-    updateUniqueEvents() {
-      const pendingEvents = this.dataSource.data.length > 0
-        ? this.dataSource.data.map(item => ({
-            event_name: item.event_name,
-            event_date: item.event_date
-          }))
-        : [];
-
-      const approvedEvents = this.approvedDataSource.data.length > 0
-        ? this.approvedDataSource.data.map(item => ({
-            event_name: item.event_name,
-            event_date: item.event_date
-          }))
-        : [];
-
-      const uniqueEventSet = new Set<string>();
-      const combinedEvents: EventInfo[] = [];
-
-      [...pendingEvents, ...approvedEvents, ...this.allEvents].forEach(event => {
-        const eventKey = `${event.event_name}|${event.event_date}`;
-        if (!uniqueEventSet.has(eventKey)) {
-          uniqueEventSet.add(eventKey);
-          combinedEvents.push(event);
-        }
-      });
-
-      this.uniqueEvents = combinedEvents;
-    }
-
-    approvedAttendance(data: any) {
-      this.apiService.approvedAttendance(data).subscribe({
-        next: (response: any) => {
-          console.log('API Response:', response);
-          
-          if (response && (response.status === 'success' || response.code === 200)) {
-            this.snackBar.open('Attendance approved successfully', 'Close', {
-              duration: 3000
-            });
-    
-            this.fetchAttendance();
-            this.fetchApprovedParticipants();
-          } else {
-            this.snackBar.open(response.message || 'Failed to approve attendance', 'Close', {
-              duration: 3000
-            });
-          }
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error approving attendance:', error);
-          
-          let errorMessage = 'Error occurred while approving attendance';
-          
-          if (error.error instanceof ErrorEvent) {
-            errorMessage = `Error: ${error.error.message}`;
-          } else if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-          } else {
-            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-          }
-          
-          this.snackBar.open(errorMessage, 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    }
-
-  getPendingAttendanceForEvent(eventName: string) {
-    return this.dataSource.data.filter(item => item.event_name === eventName);
-  }
-
-  getApprovedAttendanceForEvent(eventName: string) {
-    return this.approvedDataSource.data.filter(item => item.event_name === eventName);
-  }
-
-  deleteUserAttendance(attendanceId: string) {
-    const confirmation = window.confirm(`Are you sure you want to delete attendance with ID: ${attendanceId}?`);
-    if (confirmation) {
-      console.log('Deleting attendance with ID:', attendanceId); // Debug attendance ID
-      this.apiService.deleteUserAttendance({ id: attendanceId }).subscribe(
-        (response: any) => {
-          if (response && response.status && response.status.remarks === 'success') {
-            this.snackBar.open('User attendance record deleted successfully', 'Close', {
-              duration: 3000
-            });
-            this.fetchAttendance(); // Refresh attendance list
-          } else {
-            console.error('Failed to delete user attendance record:', response.status.message);
-            this.snackBar.open('Failed to delete user attendance record.', 'Close', {
-              duration: 3000
-            });
-          }
-        },
-        (error) => {
-          console.error('Error deleting user attendance record:', error);
-          this.snackBar.open('Error deleting user attendance record.', 'Close', {
-            duration: 3000
-          });
-        }
-      );
-    }
-  }
-
-  isEventWithoutAttendance(eventName: string): boolean {
-    return this.getPendingAttendanceForEvent(eventName).length === 0 &&
-            this.getApprovedAttendanceForEvent(eventName).length === 0;
-  }
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error updating status:', error);
+        this.snackBar.open('Failed to update status.', 'Close', { duration: 3000 });
+      }
+    );
+  }  
 }

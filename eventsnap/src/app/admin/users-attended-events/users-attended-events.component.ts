@@ -162,33 +162,37 @@ export class UsersAttendedEventsComponent implements OnInit {
   }
 
   updateUniqueEvents() {
-    const pendingEvents = this.dataSource.data.length > 0
-      ? this.dataSource.data.map(item => ({
-          event_name: item.event_name,
-          event_date: item.event_date
-        }))
-      : [];
-
-    const approvedEvents = this.approvedDataSource.data.length > 0
-      ? this.approvedDataSource.data.map(item => ({
-          event_name: item.event_name,
-          event_date: item.event_date
-        }))
-      : [];
-
+    // Combine events from different sources (pending, approved, all)
+    const allEventsData = [
+      ...this.dataSource.data.map(item => ({
+        event_name: item.event_name,
+        event_date: item.event_date
+      })),
+      ...this.approvedDataSource.data.map(item => ({
+        event_name: item.event_name,
+        event_date: item.event_date
+      })),
+      ...this.allEvents
+    ];
+  
+    // Using a Set to ensure uniqueness
     const uniqueEventSet = new Set<string>();
     const combinedEvents: EventInfo[] = [];
-
-    [...pendingEvents, ...approvedEvents, ...this.allEvents].forEach(event => {
+  
+    allEventsData.forEach(event => {
       const eventKey = `${event.event_name}|${event.event_date}`;
+      
+      // Only add the event if it's unique
       if (!uniqueEventSet.has(eventKey)) {
         uniqueEventSet.add(eventKey);
         combinedEvents.push(event);
       }
     });
-
+  
+    // Set the final unique events list
     this.uniqueEvents = combinedEvents;
   }
+  
 
   approvedAttendance(data: any) {
     this.apiService.approvedAttendance(data).subscribe({

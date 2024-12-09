@@ -50,6 +50,91 @@ class Get extends GlobalMethods {
         return $response;
     }
 
+    public function get_registrants($event_id){
+        $stmt = $this->pdo->prepare("SELECT * FROM registrants WHERE event_id = ?");
+        $stmt->execute([$event_id]);
+        $registrantsRecord = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $registrantsRecord; // Return the fetched records
+    }
+    // public function get_attendance_by_id($event_id): array {
+    //     // Prepare the SQL statement to fetch attendance records
+    //     $stmt = $this->pdo->prepare("SELECT * FROM attendance WHERE event_id = ?");
+        
+    //     // Execute the statement and handle potential execution errors
+    //     if (!$stmt->execute([$event_id])) {
+    //         $errorInfo = $stmt->errorInfo();
+    //         error_log("SQL Error: " . json_encode($errorInfo));
+    //         return array('status' => array('remarks' => 'failed', 'message' => 'Database error.'));
+    //     }
+    
+    //     // Fetch the attendance records
+    //     $attendanceRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    //     // Encode the LONGBLOB images in base64 format if present
+    //     foreach ($attendanceRecords as &$record) {
+    //         if (isset($record['image']) && !empty($record['image'])) {
+    //             // Ensure the image is a valid binary data before base64 encoding
+    //             $encodedImage = base64_encode($record['image']);
+    //             if ($encodedImage) { // Make sure the encoding is successful
+    //                 $record['image'] = 'data:image/jpeg;base64,' . $encodedImage;
+    //             } else {
+    //                 $record['image'] = ''; // Default empty string for invalid images
+    //             }
+    //         } else {
+    //             $record['image'] = ''; // Default empty string for records without an image
+    //         }
+    //     }
+    
+    //     // Return the attendance records
+    //     return array(
+    //         'status' => array('remarks' => 'success', 'message' => 'Attendance records fetched successfully.'),
+    //         'data' => $attendanceRecords
+    //     );
+    // }
+
+    public function get_attendance_by_id($event_id): array {
+        // Prepare the SQL statement to fetch attendance records
+        $stmt = $this->pdo->prepare("SELECT * FROM attendance WHERE event_id = ?");
+        
+        // Execute the statement and handle potential execution errors
+        if (!$stmt->execute([$event_id])) {
+            $errorInfo = $stmt->errorInfo();
+            error_log("SQL Error: " . json_encode($errorInfo));
+            return array('status' => array('remarks' => 'failed', 'message' => 'Database error.'));
+        }
+    
+        // Fetch the attendance records
+        $attendanceRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        // Encode the LONGBLOB images in base64 format if present
+        foreach ($attendanceRecords as &$record) {
+            if (isset($record['image']) && !empty($record['image'])) {
+                // Base64 encode the LONGBLOB image
+                $encodedImage = base64_encode($record['image']);
+                if ($encodedImage) {
+                    $record['image'] = 'data:image/jpeg;base64,' . $encodedImage;
+                } else {
+                    $record['image'] = ''; // Default empty string for invalid images
+                }
+            } else {
+                $record['image'] = ''; // Default empty string for records without an image
+            }
+        }
+    
+        // Return the attendance records
+        return array(
+            'status' => array('remarks' => 'success', 'message' => 'Attendance records fetched successfully.'),
+            'data' => $attendanceRecords
+        );
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     public function get_attendance() {
         $sql = "SELECT *, image AS image_url FROM attendance";
         $response = $this->executeQuery($sql);
