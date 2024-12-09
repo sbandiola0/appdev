@@ -45,12 +45,31 @@ export class EventsComponent implements OnInit {
         console.log('Fetched events:', this.events);
         // Now that events are fetched, fetch registration statuses
         this.fetchRegistrationStatuses();
+        this.checkUserAttendance();
       },
       error: (error) => {
         console.error('Error fetching events:', error);
       }
     });
   }  
+
+  checkUserAttendance() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+  
+    this.events.forEach((event) => {
+      this.eventsService.checkUserEventAttendance(userId, event.id).subscribe({
+        next: (hasAttended) => {
+          if (hasAttended) {
+            this.registrationStatus[event.id] = 'Attended';
+          }
+        },
+        error: (error) => {
+          console.error('Error checking event attendance:', error);
+        }
+      });
+    });
+  }
 
   getAttendedEvents() {
     const userId = localStorage.getItem('userId');
@@ -200,23 +219,29 @@ export class EventsComponent implements OnInit {
 
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
-    // Check if the event has ended
+    // If the event has ended, display 'Event Ended'
     if (this.isPastEvent(event.event_date, event.event_end_time)) {
-      return 'Event Ended';  // Display 'Event Ended' if the event is over
+      return 'Event Ended';
     }
   
-    // Check if the event is approved
+    // If user has attended, change the button label to 'View Submission'
     const status = this.registrationStatus[event.id];
+    if (status === 'Attended') {
+      return 'View Submission';
+    }
+  
+    // If event is approved, show 'Submit Attendance'
     if (status === 'Approved') {
-      return 'Submit Attendance';  // Only show 'Attend' if the event is approved
+      return 'Submit Attendance';
     }
   
     if (status === 'Pending') {
-      return 'Pending Approval';  // If pending, show 'Pending Approval'
+      return 'Pending Approval';
     }
   
-    return 'Register';  // Default to 'Register' if no status is found
-  }  
+    // Default to 'Register' if no status is found
+    return 'Register';
+  }
 
 
   registerForEvent(event: any): void {
@@ -288,5 +313,12 @@ export class EventsComponent implements OnInit {
   
   objectKeys(obj: any): string[] {
     return Object.keys(obj);
+  }
+
+  viewSubmission(event: any) {
+    // Logic to view the user's submission
+    console.log('Viewing submission for event:', event);
+    // Navigate to a submission details page, or show the submission in a modal, etc.
+    this.router.navigate(['/submission-details', event.id]);
   }
 }
