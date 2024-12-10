@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
 
 @Component({
   selector: 'app-submission-details',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './submission-details.component.html',
   styleUrls: ['./submission-details.component.css']
 })
@@ -15,7 +16,8 @@ export class SubmissionDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private apiService: ApiService  // Assuming your service to fetch event data
+    private apiService: ApiService,  
+    private location: Location,
   ) {}
 
   ngOnInit(): void {
@@ -58,5 +60,11 @@ export class SubmissionDetailsComponent implements OnInit {
         // Handle error, e.g., show an error message or fallback data
       }
     });
+  }
+
+  goBack(): void {
+    setTimeout(() => {
+      this.location.back();
+    }, 200);
   }
 }

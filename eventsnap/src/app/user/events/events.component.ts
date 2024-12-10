@@ -20,9 +20,7 @@ export class EventsComponent implements OnInit {
   eventParticipantsCount: any = {};
   userAttendanceStatus: any;
   registrationStatus: { [key: number]: string } = {};
-  userId: string = '';
-  selectedEvent: any = null; 
-  
+
   constructor(
     private eventsService: ApiService,
     private router: Router,
@@ -38,8 +36,7 @@ export class EventsComponent implements OnInit {
       this.updateTime();
     }, 1000);
     this.getApprovedParticipantsCount();
-    this.userId = localStorage.getItem('userId') || '';  // Assign here if not done in the constructor
-
+    this.fetchRegistrationStatuses()
   }
 
   fetchEvents() {
@@ -65,7 +62,11 @@ export class EventsComponent implements OnInit {
       this.eventsService.checkUserEventAttendance(userId, event.id).subscribe({
         next: (hasAttended) => {
           if (hasAttended) {
+            // Directly update the registration status to 'Attended' if user has attended
             this.registrationStatus[event.id] = 'Attended';
+          } else {
+            // You can set a different status (e.g., 'Not Attended') if needed
+            this.registrationStatus[event.id] = 'Not Attended';
           }
         },
         error: (error) => {
@@ -74,7 +75,7 @@ export class EventsComponent implements OnInit {
       });
     });
   }
-
+  
   getAttendedEvents() {
     const userId = localStorage.getItem('userId');
     if (userId) {
@@ -223,50 +224,59 @@ export class EventsComponent implements OnInit {
 
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
-    // If the event has ended, display 'Event Ended'
+    // Helper method to check event status
+    const status = this.getEventStatus(event);
+  
+    // If the event is past, show 'Event Ended'
     if (this.isPastEvent(event.event_date, event.event_end_time)) {
       return 'Event Ended';
     }
   
-    // Check if the user has already attended the event
-    const status = this.registrationStatus[event.id];
-    if (status === 'Attended') {
-      return 'View Submission'; // Only show this after the user has attended
+    switch (status) {
+      case 'Attended':
+        return 'View Submission'; // User has attended the event
+      case 'Approved':
+        return 'Submit Attendance'; // Approved for the event
+      case 'Pending':
+        return 'Pending Approval'; // Pending approval status
+      case 'Rejected':
+        return 'Cannot Attend Event'; // Rejected from attending
+      default:
+        return 'Register'; // Default to 'Register' if no status
     }
-  
-    // If the event is approved, show 'Submit Attendance'
-    if (status === 'Approved') {
-      return 'Submit Attendance';
-    }
-  
-    // If the event is pending, show 'Pending Approval'
-    if (status === 'Pending') {
-      return 'Pending Approval';
-    }
+  }  
 
-    if (status === 'Rejected') {
-      return 'Cannot Attend Event';
+  getEventStatus(event: any): string {
+  const status = this.registrationStatus[event.id];
+  
+  // Return the status if available
+  return status || 'Not Registered';
+}
+
+
+  handleButtonClick(event: any) {
+    const buttonLabel = this.getButtonLabel(event);  // Fetch the correct button label
+
+    switch (buttonLabel) {
+      case 'Register':
+        this.registerForEvent(event); // Register for event if not yet registered
+        break;
+      case 'View Submission':
+        this.viewSubmission(event); // View user's submission details
+        break;
+      case 'Submit Attendance':
+        this.attendEvent(event); // Submit attendance if approved
+        break;
+      case 'Pending Approval':
+        this.snackBar.open('Your registration is pending approval.', 'Close', { duration: 3000 });
+        break;
+      case 'Cannot Attend Event':
+        this.snackBar.open('You cannot attend this event.', 'Close', { duration: 3000 });
+        break;
+      default:
+        break;
     }
-    
-    // Default to 'Register' if no status is found
-    return 'Register';
   }
-
-  handleButtonClick(event: any ) {
-    const buttonLabel = this.getButtonLabel(event);
-  
-    if (buttonLabel === 'Register') {
-      this.registerForEvent(event); // Register if not yet registered
-    } else if (buttonLabel === 'View Submission') {
-      this.viewSubmission(event); // Navigate to submission details if attended
-    } else if (buttonLabel === 'Submit Attendance') {
-      this.attendEvent(event); // Handle attendance submission
-    } else if (buttonLabel === 'Pending Approval') {
-      this.snackBar.open('Your registration is pending approval.', 'Close', { duration: 3000 });
-    }
-  }
-  
-
   registerForEvent(event: any): void {
     const studentId = localStorage.getItem('userId'); // Get logged-in student's ID
     const data = { student_id: studentId, event_id: event.id };
@@ -337,41 +347,10 @@ export class EventsComponent implements OnInit {
     return Object.keys(obj);
   }
 
-  // viewSubmission(event: any) {
-  //   // Logic to view the user's submission
-  //   console.log('Viewing submission for event:', event);
-  //   // Navigate to a submission details page, or show the submission in a modal, etc.
-  //   this.router.navigate(['/submission-details', event.id]);
-  // }
-
   viewSubmission(event: any) {
-    const userId = localStorage.getItem('userId');
-    
-    if (!userId) {
-      console.error('User ID is required to view the submission.');
-      this.snackBar.open('Unable to fetch your submission. Please log in again.', 'Close', { duration: 3000 });
-      return;
-    }
-  
-    console.log('Fetching approved attendance for user:', userId, 'and event:', event.id);
-    
-    this.eventsService.getEventUserHistory(userId, event.id).subscribe({
-      next: (data) => {
-        console.log('Received data:', data); // Log the data to inspect the structure
-        if (data && data.length > 0) {
-          this.router.navigate(['/submission-details', event.id]);
-        } else {
-          this.snackBar.open('No submission found for this event.', 'Close', { duration: 3000 });
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching approved attendance data:', error);
-        this.snackBar.open('Unable to fetch your submission. Please try again later.', 'Close', { duration: 3000 });
-      }
-    });
+    // Logic to view the user's submission
+    console.log('Viewing submission for event:', event);
+    // Navigate to a submission details page, or show the submission in a modal, etc.
+    this.router.navigate(['/submission-details', event.id]);
   }
-  
-  
-  
-  
 }

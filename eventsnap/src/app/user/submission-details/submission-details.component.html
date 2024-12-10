@@ -19,6 +19,18 @@
         <p><strong>Program:</strong> {{ submissionData.program }}</p>
         <p><strong>Event Name:</strong> {{ submissionData.event_name }}</p>
         <p><strong>Timestamp:</strong> {{ submissionData.timestamp }}</p>
+        <p [ngClass]="{
+          'text-orange-500': submissionData.status === 'Pending',
+          'text-green-500': submissionData.status === 'Approved',
+          'text-red-500': submissionData.status === 'Rejected'
+        }">
+        <strong>Status:</strong>
+        {{  submissionData.status === 'Pending' ? 'Pending for approval' : 
+            submissionData.status === 'Approved' ? 'Approved to attend' : 
+            submissionData.status === 'Rejected' ? 'Rejected' : 
+            'Unknown Status' }}
+      </p>             
+      <button class="back-btn p-4" (click)="goBack()">Back</button>
       </div>
     </div>
   </div>

@@ -51,18 +51,18 @@
                 <strong>Participants:</strong> {{ getApprovedCount(event) }}/40
               </p>
               <p class="registration-status"
-              [ngClass]="{
-                'text-orange-500': registrationStatus[event.id] === 'Pending',
-                'text-green-500': registrationStatus[event.id] === 'Approved',
-                'text-green-700': registrationStatus[event.id] === 'Attended',
-                'text-red-500': registrationStatus[event.id] === 'Rejected'
-              }">
-              <strong>Status:</strong>
-              {{ registrationStatus[event.id] === 'Pending' ? 'Pending for approval' : 
-                  registrationStatus[event.id] === 'Approved' ? 'Approved to attend' : 
-                  registrationStatus[event.id] === 'Attended' ? 'Attended' :
-                  registrationStatus[event.id] || 'Not Registered' }}
-            </p>
+                [ngClass]="{
+                  'text-orange-500': registrationStatus[event.id] === 'Pending',
+                  'text-green-500': registrationStatus[event.id] === 'Approved',
+                  'text-green-700': registrationStatus[event.id] === 'Attended',
+                  'text-red-500': registrationStatus[event.id] === 'Rejected'
+                }">
+                <strong>Status:</strong>
+                {{ registrationStatus[event.id] === 'Pending' ? 'Pending for approval' : 
+                    registrationStatus[event.id] === 'Approved' ? 'Approved to attend' : 
+                    registrationStatus[event.id] === 'Attended' ? 'Attended' :
+                    registrationStatus[event.id] || 'Not Registered' }}
+              </p>
             
               <button
               class="attend-button"

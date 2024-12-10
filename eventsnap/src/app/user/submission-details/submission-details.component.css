@@ -38,3 +38,23 @@
     font-size: 1.1rem;
   }
   
+  .back-btn {
+    width: 100px;
+    margin-top: 0;
+    background-color: #8264a1;
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-start;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  
+  .back-btn:hover:not(:disabled) {
+    background-color: #A68BC3;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(166, 139, 195, 0.3);
+  }
