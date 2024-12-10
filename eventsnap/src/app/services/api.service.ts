@@ -65,6 +65,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}get-registrants/${eventId}`);
   }    
 
+  getAttendees(eventId: number) {
+    return this.http.get(`${this.baseUrl}get-attendees/${eventId}`);
+  }    
+
   updateEvent(data: any): Observable<any> {
     return this.http.post<any>(this.baseUrl + 'updateEvent', data);
   }
@@ -217,5 +221,9 @@ getEventParticipantsCount(): Observable<any> {
 
   updateRegistrantStatus(data: { student_id: number; event_id: number; status: string }) {
     return this.http.post(`${this.baseUrl}updateRegistrantStatus`, data);
+  }  
+
+  updateAttendanceStatus(data: { student_id: number; event_id: number; status: string }) {
+    return this.http.post(`${this.baseUrl}updateAttendanceStatus`, data);
   }  
 }

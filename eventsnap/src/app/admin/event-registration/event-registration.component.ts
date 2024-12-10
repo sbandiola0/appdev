@@ -1,5 +1,5 @@
 import { ApiService } from './../../services/api.service';
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder,} from '@angular/forms';
 import { Router } from '@angular/router';
@@ -39,21 +39,23 @@ interface EventInfo {
 })
 export class EventRegistrationComponent implements OnInit {
   displayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'status', 'actions'];
-  attendanceDataSource = new MatTableDataSource<any>();
   attendanceDisplayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'image', 'status', 'actions'];
+  attendanceDataSource = new MatTableDataSource<any>([]);
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-
+  
   constructor(
     private apiService: ApiService,
     private snackBar: MatSnackBar,
     private sanitizer: DomSanitizer,
-    @Inject(MAT_DIALOG_DATA) public data: { eventId: number } // Injected eventId
+    @Inject(MAT_DIALOG_DATA) public data: { eventId: number }, // Injected eventId
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.fetchRegistrants();
+    this.fetchAttendees();
     this.getAttendance();
   }
 
@@ -112,14 +114,6 @@ getAttendance() {
   );
 }
 
-
-
-
-
-
-
-
-
   fetchRegistrants() {
     const eventId = this.data.eventId; // Use the injected eventId
     this.apiService.getRegistrants(eventId).subscribe(
@@ -148,6 +142,34 @@ getAttendance() {
     );
   }   
 
+  fetchAttendees() {
+    const eventId = this.data.eventId; // Use the injected eventId
+    this.apiService.getAttendees(eventId).subscribe(
+      (response: any) => {
+        // Directly access the array from the response
+        const attendeesData = response.map((item: any) => ({
+          ...item,
+          image: this.sanitizer.bypassSecurityTrustUrl(item.image),
+        }));
+  
+        // Filter data based on the eventId
+        this.attendanceDataSource.data = attendeesData.filter((attendee: any) =>
+          Number(attendee.event_id) === Number(eventId) // Ensure type safety
+        );
+  
+        // Attach paginator and sorter
+        this.attendanceDataSource.paginator = this.paginator;
+        this.attendanceDataSource.sort = this.sort;
+  
+        console.log('Filtered attendee:', this.attendanceDataSource.data);
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching attendee:', error);
+        this.snackBar.open('Failed to fetch attendee.', 'Close', { duration: 3000 });
+      }
+    );
+  } 
+
   updateStatus(studentId: number, eventId: number, status: string) {
     const data = {
       student_id: studentId,
@@ -157,10 +179,10 @@ getAttendance() {
   
     this.apiService.updateRegistrantStatus(data).subscribe(
       (response: any) => {
-        // Check if the response has a 'status' object and if 'remarks' is 'success'
         if (response && response.status && response.status.remarks === "success") {
           this.snackBar.open(`Status updated to ${status}`, 'Close', { duration: 3000 });
-          this.fetchRegistrants(); // Refresh the data after updating
+          this.fetchRegistrants(); // Refresh the data
+          this.cdr.detectChanges(); // Manually trigger change detection
         } else {
           this.snackBar.open(response.status.message || 'Failed to update status.', 'Close', { duration: 3000 });
         }
@@ -170,5 +192,29 @@ getAttendance() {
         this.snackBar.open('Failed to update status.', 'Close', { duration: 3000 });
       }
     );
-  }  
+  }
+  
+  updateAttendanceStatus(studentId: number, eventId: number, status: string) {
+    const data = {
+      student_id: studentId,
+      event_id: eventId,
+      status: status,
+    };
+  
+    this.apiService.updateAttendanceStatus(data).subscribe(
+      (response: any) => {
+        if (response && response.status && response.status.remarks === "success") {
+          this.snackBar.open(`Status updated to ${status}`, 'Close', { duration: 3000 });
+          this.fetchAttendees(); // Refresh the data
+          this.cdr.detectChanges(); // Manually trigger change detection
+        } else {
+          this.snackBar.open(response.status.message || 'Failed to update status.', 'Close', { duration: 3000 });
+        }
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error updating status:', error);
+        this.snackBar.open('Failed to update status.', 'Close', { duration: 3000 });
+      }
+    );
+  }
 }

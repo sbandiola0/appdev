@@ -56,6 +56,13 @@ class Get extends GlobalMethods {
         $registrantsRecord = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $registrantsRecord; // Return the fetched records
     }
+
+    public function get_attendees($event_id){
+        $stmt = $this->pdo->prepare("SELECT * FROM attendance WHERE event_id = ?");
+        $stmt->execute([$event_id]);
+        $registrantsRecord = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $registrantsRecord; // Return the fetched records
+    }
     // public function get_attendance_by_id($event_id): array {
     //     // Prepare the SQL statement to fetch attendance records
     //     $stmt = $this->pdo->prepare("SELECT * FROM attendance WHERE event_id = ?");

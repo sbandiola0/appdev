@@ -68,6 +68,16 @@ switch ($_SERVER['REQUEST_METHOD']) {
             }
                 break;
 
+            case 'get-attendees':
+                if (isset($request[1])) {
+                    // Call the method in the Get class
+                echo json_encode($get->get_attendees($request[1]));
+            } else {
+                echo json_encode(array('error' => 'event ID is required.'));
+                http_response_code(400); // Bad Request
+            }
+                break;
+
             case 'users':
                 echo json_encode($get->get_users());
                 break;
@@ -231,6 +241,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             case 'updateRegistrantStatus':
                 echo json_encode($post->updateRegistrantStatus($data));
+                break;
+
+            case 'updateAttendanceStatus':
+                echo json_encode($post->updateAttendanceStatus($data));
                 break;
 
             default:
