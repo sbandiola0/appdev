@@ -20,7 +20,9 @@ export class EventsComponent implements OnInit {
   eventParticipantsCount: any = {};
   userAttendanceStatus: any;
   registrationStatus: { [key: number]: string } = {};
-
+  userId: string = '';
+  selectedEvent: any = null; 
+  
   constructor(
     private eventsService: ApiService,
     private router: Router,
@@ -36,6 +38,8 @@ export class EventsComponent implements OnInit {
       this.updateTime();
     }, 1000);
     this.getApprovedParticipantsCount();
+    this.userId = localStorage.getItem('userId') || '';  // Assign here if not done in the constructor
+
   }
 
   fetchEvents() {
@@ -248,7 +252,7 @@ export class EventsComponent implements OnInit {
     return 'Register';
   }
 
-  handleButtonClick(event: any) {
+  handleButtonClick(event: any ) {
     const buttonLabel = this.getButtonLabel(event);
   
     if (buttonLabel === 'Register') {
@@ -333,10 +337,41 @@ export class EventsComponent implements OnInit {
     return Object.keys(obj);
   }
 
+  // viewSubmission(event: any) {
+  //   // Logic to view the user's submission
+  //   console.log('Viewing submission for event:', event);
+  //   // Navigate to a submission details page, or show the submission in a modal, etc.
+  //   this.router.navigate(['/submission-details', event.id]);
+  // }
+
   viewSubmission(event: any) {
-    // Logic to view the user's submission
-    console.log('Viewing submission for event:', event);
-    // Navigate to a submission details page, or show the submission in a modal, etc.
-    this.router.navigate(['/submission-details', event.id]);
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+      console.error('User ID is required to view the submission.');
+      this.snackBar.open('Unable to fetch your submission. Please log in again.', 'Close', { duration: 3000 });
+      return;
+    }
+  
+    console.log('Fetching approved attendance for user:', userId, 'and event:', event.id);
+    
+    this.eventsService.getEventUserHistory(userId, event.id).subscribe({
+      next: (data) => {
+        console.log('Received data:', data); // Log the data to inspect the structure
+        if (data && data.length > 0) {
+          this.router.navigate(['/submission-details', event.id]);
+        } else {
+          this.snackBar.open('No submission found for this event.', 'Close', { duration: 3000 });
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching approved attendance data:', error);
+        this.snackBar.open('Unable to fetch your submission. Please try again later.', 'Close', { duration: 3000 });
+      }
+    });
   }
+  
+  
+  
+  
 }

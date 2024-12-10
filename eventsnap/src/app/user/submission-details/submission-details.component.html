@@ -1,0 +1,25 @@
+<div class="container mt-0 p-4">
+    <!-- Modal Content -->
+    <div class="modal-content d-flex">
+      <!-- Left Side: Big Image -->
+      <div class="modal-left">
+        <img 
+          [src]="imageUrl" 
+          alt="Event Image" 
+          class="big-image" 
+        />
+      </div>
+  
+      <!-- Right Side: Details -->
+      <div class="modal-right">
+        <h3 class="mb-3">Submission Details</h3>
+        <p><strong>Student ID:</strong> {{ submissionData.student_id }}</p>
+        <p><strong>Event Name:</strong> {{ submissionData.event_name }}</p>
+        <p><strong>Last Name:</strong> {{ submissionData.last_name }}</p>
+        <p><strong>Program:</strong> {{ submissionData.program }}</p>
+        <p><strong>Event Name:</strong> {{ submissionData.event_name }}</p>
+        <p><strong>Timestamp:</strong> {{ submissionData.timestamp }}</p>
+      </div>
+    </div>
+  </div>
+  

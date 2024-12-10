@@ -19,6 +19,7 @@ import { EditUserModalComponent } from './admin/students/edit-user-modal/edit-us
 import { HistoryComponent } from './user/history/history.component';
 import { AboutComponent } from './user/about/about.component';
 import { EventRegistrationComponent } from './admin/event-registration/event-registration.component';
+import { SubmissionDetailsComponent } from './user/submission-details/submission-details.component';
 
 
 export const routes: Routes = [
@@ -39,6 +40,7 @@ export const routes: Routes = [
   { path: 'edit-user-modal', component: EditUserModalComponent, canActivate: [AuthGuard]},
   { path: 'history', component: HistoryComponent, canActivate: [UserAuthGuard]},
   { path: 'event-registration', component: EventRegistrationComponent },
+  { path: 'submission-details/:id', component: SubmissionDetailsComponent }
 ]
 
 @NgModule({

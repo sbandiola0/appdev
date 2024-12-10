@@ -107,10 +107,7 @@ getEventParticipantsCount(): Observable<any> {
     );
  }
 
-  //  getEventHistory(userId: string): Observable<any[]> {
-  //   const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-  //   return this.http.get<any[]>(`${this.baseUrl}event-history/${userId}`, { headers });
-  // }
+
 
   getEventHistory(userId: string): Observable<any[]> {
     const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
@@ -126,25 +123,19 @@ getEventParticipantsCount(): Observable<any> {
     );
   }
 
-  // getUserAttendanceStatus(userId: string): Observable<any> {
-  //   return this.http.get<any>(`${this.baseUrl}getUserAttendanceStatus/${userId}`);
-  // }
+  getEventUserHistory(userId: string, eventId: number): Observable<any[]> {
+    const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+    return this.http.get<any[]>(`${this.baseUrl}event-user-history/${userId}/${eventId}`, { headers }).pipe(
+      map((data: any[]) => {
+        return data;
+      }),
+      catchError((error) => {
+        console.error('Error fetching event user history:', error);
+        return throwError(() => new Error('Failed to fetch event user history'));
+      })
+    );
+  }
 
-  // Example of improved error handling
-  
-// checkEventAttendance(studentId: string, eventId: string): Observable<any> {
-//   return this.http.post<any>(`${this.baseUrl}/check-attendance.php`, {
-//     student_id: studentId,
-//     event_id: eventId
-//   }).pipe(
-//     catchError(error => {
-//       console.error('Check attendance error:', error);
-//       return throwError(() => new Error('Failed to check event attendance'));
-//     })
-//   );
-// }
-
-  // In api.service.ts
   checkUserEventAttendance(studentId: string, eventId: number): Observable<boolean> {
     const token = localStorage.getItem('userToken');
   

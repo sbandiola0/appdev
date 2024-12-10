@@ -105,22 +105,6 @@ class Get extends GlobalMethods {
     
         // Fetch the attendance records
         $attendanceRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-        // Encode the LONGBLOB images in base64 format if present
-        foreach ($attendanceRecords as &$record) {
-            if (isset($record['image']) && !empty($record['image'])) {
-                // Base64 encode the LONGBLOB image
-                $encodedImage = base64_encode($record['image']);
-                if ($encodedImage) {
-                    $record['image'] = 'data:image/jpeg;base64,' . $encodedImage;
-                } else {
-                    $record['image'] = ''; // Default empty string for invalid images
-                }
-            } else {
-                $record['image'] = ''; // Default empty string for records without an image
-            }
-        }
-    
         // Return the attendance records
         return array(
             'status' => array('remarks' => 'success', 'message' => 'Attendance records fetched successfully.'),
@@ -147,6 +131,15 @@ class Get extends GlobalMethods {
         $attendanceRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $attendanceRecords; // Return the fetched records
     }
+    public function getUserEventHistoryForEvent($userId, $eventId) {
+        // Prepare SQL to fetch attendance records for the given userId and eventId
+        $stmt = $this->pdo->prepare("SELECT * FROM attendance WHERE student_id = ? AND event_id = ?");
+        $stmt->execute([$userId, $eventId]);
+        $attendanceRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $attendanceRecords; // Return attendance records for the user and specific event
+    }
+    
+    
 
 
     public function get_approved_participants(){

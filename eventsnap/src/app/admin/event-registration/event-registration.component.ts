@@ -40,7 +40,7 @@ interface EventInfo {
 export class EventRegistrationComponent implements OnInit {
   displayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'status', 'actions'];
   attendanceDataSource = new MatTableDataSource<any>();
-  attendanceDisplayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'image', 'actions'];
+  attendanceDisplayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'image', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -70,7 +70,16 @@ getAttendance() {
         const attendanceData = Array.isArray(response.data)
           ? response.data.map((item: any) => {
               // Check if the image exists and is a valid base64 format
-              if (item.image && base64Pattern.test(item.image)) {
+              if (item.image) {
+                // Only prepend 'data:image/png;base64,' or 'data:image/jpeg;base64,' if not already present
+                const imageBase64 = item.image;
+                if (!imageBase64.startsWith('data:image/png;base64,') && !imageBase64.startsWith('data:image/jpeg;base64,')) {
+                  if (imageBase64.startsWith('iVBORw0KGgo')) {
+                    item.image = `data:image/png;base64,${imageBase64}`;
+                  } else if (imageBase64.startsWith('/9j/')) {
+                    item.image = `data:image/jpeg;base64,${imageBase64}`;
+                  }
+                }
                 return {
                   ...item,
                   image: this.sanitizer.bypassSecurityTrustUrl(item.image), // No need to prepend 'data:image/jpeg;base64,' again
@@ -102,6 +111,7 @@ getAttendance() {
     }
   );
 }
+
 
 
 

@@ -104,6 +104,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     }
                     break;
 
+                    case 'event-user-history':
+                        // Ensure you are getting both the user ID and event ID from the request
+                        if (isset($request[1]) && isset($request[2])) {
+                            // Call the method in the Get class to fetch attendance by both userId and eventId
+                            echo json_encode($get->getUserEventHistoryForEvent($request[1], $request[2])); // Fetch by both userId and eventId
+                        } else {
+                            echo json_encode(array('error' => 'User ID and Event ID are required.'));
+                            http_response_code(400); // Bad Request
+                        }
+                        break;
+
                     case 'getApprovedParticipants':
                         echo json_encode($get->get_approved_participants());
                         break;
