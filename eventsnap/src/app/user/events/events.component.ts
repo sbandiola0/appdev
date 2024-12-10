@@ -60,19 +60,40 @@ export class EventsComponent implements OnInit {
   
     this.events.forEach((event) => {
       this.eventsService.checkUserEventAttendance(userId, event.id).subscribe({
-        next: (hasAttended) => {
+        next: (hasAttended: boolean) => {
           if (hasAttended) {
-            // Directly update the registration status to 'Attended' if user has attended
-            this.registrationStatus[event.id] = 'Attended';
+            this.registrationStatus[event.id] = 'Attended';  // Update to 'Attended'
           } else {
-            // You can set a different status (e.g., 'Not Attended') if needed
-            this.registrationStatus[event.id] = 'Not Attended';
+            // If not attended, fetch the actual registration status (Pending, Approved, Rejected)
+            this.fetchRegistrationStatusForEvent(event.id);
           }
         },
         error: (error) => {
           console.error('Error checking event attendance:', error);
         }
       });
+    });
+  }
+  
+  fetchRegistrationStatusForEvent(eventId: any) {
+    this.eventsService.getRegistrationStatus(eventId).subscribe({
+      next: (response: any) => {
+        // Assuming the API returns the status as a string
+        const status = response.status;
+  
+        if (status === 'Pending') {
+          this.registrationStatus[eventId] = 'Pending';
+        } else if (status === 'Approved') {
+          this.registrationStatus[eventId] = 'Approved';
+        } else if (status === 'Rejected') {
+          this.registrationStatus[eventId] = 'Rejected';
+        } else {
+          this.registrationStatus[eventId] = 'Not Registered';
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching registration status for event:', error);
+      }
     });
   }
   
@@ -224,27 +245,48 @@ export class EventsComponent implements OnInit {
 
   // This method will return the appropriate button label based on the user's attendance status.
   getButtonLabel(event: any): string {
-    // Helper method to check event status
     const status = this.getEventStatus(event);
   
-    // If the event is past, show 'Event Ended'
     if (this.isPastEvent(event.event_date, event.event_end_time)) {
       return 'Event Ended';
     }
   
+    // Check if the event has not started yet
+    if (this.isFutureEvent(event.event_date)) {
+      // User is approved but event is still in the future
+      if (status === 'Approved') {
+        return 'Event Not Yet Started';  // Prevent attendance submission for future events
+      }
+      if (status === 'Pending') {
+        return 'Waiting for Approval';  // Prevent attendance submission for future events
+      }
+      if (status === 'Rejected') {
+        return 'Cannot Attend Event';  // Prevent attendance submission for future events
+      }
+      return 'Register';  // Allow registration but prevent attendance submission
+    }
+  
     switch (status) {
       case 'Attended':
-        return 'View Submission'; // User has attended the event
+        return 'View Submission';
       case 'Approved':
-        return 'Submit Attendance'; // Approved for the event
+        return 'Submit Attendance';  // Allow attendance submission for events that are happening now
       case 'Pending':
-        return 'Pending Approval'; // Pending approval status
+        return 'Waiting for Approval';
       case 'Rejected':
-        return 'Cannot Attend Event'; // Rejected from attending
+        return 'Cannot Attend Event';
       default:
-        return 'Register'; // Default to 'Register' if no status
+        return 'Register';
     }
-  }  
+  }
+  
+  // Helper method to check if the event is in the future
+  isFutureEvent(eventDate: string): boolean {
+    const eventStartDate = new Date(eventDate);
+    const today = new Date();
+    return eventStartDate > today;
+  } 
+  
 
   getEventStatus(event: any): string {
   const status = this.registrationStatus[event.id];
@@ -295,14 +337,12 @@ export class EventsComponent implements OnInit {
           verticalPosition: 'bottom',
         });
   
-        // Check if the registration was successful and approved
-        if (response.status === 'approved') {
-          // Increment the approved participant count for the event
-          this.eventParticipantsCount[event.event_name] = (this.eventParticipantsCount[event.event_name] || 0) + 1;
-        }
+        // After successful registration, set the status to 'Pending'
+        this.registrationStatus[event.id] = 'Pending';
   
-        // Refetch the events after successful registration
-        this.fetchEvents(); // Call fetchEvents to update the events list
+        // Refetch the events to update the events list if needed
+        this.fetchEvents(); // Optional, refetch if needed
+  
       },
       (error) => {
         console.error('Event registration failed:', error);
@@ -316,6 +356,7 @@ export class EventsComponent implements OnInit {
       }
     );
   }
+  
   
 
   fetchRegistrationStatuses(): void {

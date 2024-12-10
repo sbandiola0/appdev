@@ -14,6 +14,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
 
 interface EventInfo {
   event_name: string;
@@ -33,9 +34,10 @@ interface EventInfo {
     MatIconAnchor,
     MatIconButton,
     MatTableModule,
+    CanvasJSAngularChartsModule
   ],
   templateUrl: './event-registration.component.html',
-  styleUrls: ['./event-registration.component.css']
+  styleUrls: ['./event-registration.component.css'],
 })
 export class EventRegistrationComponent implements OnInit {
   displayedColumns: string[] = ['student_id', 'last_name', 'first_name', 'status', 'actions'];
@@ -44,7 +46,15 @@ export class EventRegistrationComponent implements OnInit {
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  
+  totalRegistrants: number = 0;
+  approvedRegistrants: number = 0;
+  rejectedRegistrants: number = 0;
+  totalAttendees: number = 0;
+  approvedAttendees: number = 0;
+  rejectedAttendees: number = 0;
+  chartOptions: any;
+
+
   constructor(
     private apiService: ApiService,
     private snackBar: MatSnackBar,
@@ -57,6 +67,7 @@ export class EventRegistrationComponent implements OnInit {
     this.fetchRegistrants();
     this.fetchAttendees();
     this.getAttendance();
+    this.loadChart();
   }
 
 // Modify your `getAttendance` method to handle the presence of the image property
@@ -114,61 +125,100 @@ getAttendance() {
   );
 }
 
-  fetchRegistrants() {
-    const eventId = this.data.eventId; // Use the injected eventId
-    this.apiService.getRegistrants(eventId).subscribe(
-      (response: any) => {
-        // Directly access the array from the response
-        const registrantsData = response.map((item: any) => ({
-          ...item,
-          image: this.sanitizer.bypassSecurityTrustUrl(item.image),
-        }));
-  
-        // Filter data based on the eventId
-        this.dataSource.data = registrantsData.filter((registrant: any) =>
-          Number(registrant.event_id) === Number(eventId) // Ensure type safety
-        );
-  
-        // Attach paginator and sorter
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-  
-        console.log('Filtered Registrants:', this.dataSource.data);
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching registrants:', error);
-        this.snackBar.open('Failed to fetch registrants.', 'Close', { duration: 3000 });
-      }
-    );
-  }   
+loadChart() {
+  // Check if data is available
+  if (this.totalRegistrants >= 0 && this.approvedRegistrants >= 0 && this.rejectedRegistrants >= 0 && 
+      this.totalAttendees >= 0 && this.approvedAttendees >= 0 && this.rejectedAttendees >= 0) {
 
-  fetchAttendees() {
-    const eventId = this.data.eventId; // Use the injected eventId
-    this.apiService.getAttendees(eventId).subscribe(
-      (response: any) => {
-        // Directly access the array from the response
-        const attendeesData = response.map((item: any) => ({
-          ...item,
-          image: this.sanitizer.bypassSecurityTrustUrl(item.image),
-        }));
-  
-        // Filter data based on the eventId
-        this.attendanceDataSource.data = attendeesData.filter((attendee: any) =>
-          Number(attendee.event_id) === Number(eventId) // Ensure type safety
-        );
-  
-        // Attach paginator and sorter
-        this.attendanceDataSource.paginator = this.paginator;
-        this.attendanceDataSource.sort = this.sort;
-  
-        console.log('Filtered attendee:', this.attendanceDataSource.data);
+    // Create the chart with actual values
+    this.chartOptions = {
+      animationEnabled: true,
+      title: {
+        text: "Event Registration and Attendance"
       },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching attendee:', error);
-        this.snackBar.open('Failed to fetch attendee.', 'Close', { duration: 3000 });
-      }
-    );
-  } 
+      subtitles: [{
+        text: `Total Registrants: ${this.totalRegistrants}, Total Attendees: ${this.totalAttendees}`
+      }],
+      data: [{
+        type: "pie",
+        startAngle: 240,
+        yValueFormatString: "##0\"\"",
+        indexLabel: "{label} {y}",
+        dataPoints: [
+          { y: this.approvedRegistrants, label: "Approved Registrants" },
+          { y: this.rejectedRegistrants, label: "Rejected Registrants" },
+          { y: this.totalRegistrants - this.approvedRegistrants - this.rejectedRegistrants, label: "Pending Registrants" },
+          { y: this.approvedAttendees, label: "Approved Attendees" },
+          { y: this.rejectedAttendees, label: "Rejected Attendees" },
+          { y: this.totalAttendees - this.approvedAttendees - this.rejectedAttendees, label: "Pending Attendees" }
+        ]
+      }]
+    };
+  } else {
+    console.error("Data not available for chart.");
+  }
+}
+
+
+fetchRegistrants() {
+  const eventId = this.data.eventId; // Use the injected eventId
+  this.apiService.getRegistrants(eventId).subscribe(
+    (response: any) => {
+      const registrantsData = response.map((item: any) => ({
+        ...item,
+        image: this.sanitizer.bypassSecurityTrustUrl(item.image),
+      }));
+  
+      this.dataSource.data = registrantsData.filter((registrant: any) =>
+        Number(registrant.event_id) === Number(eventId)
+      );
+      
+      // Calculate registrant statistics
+      this.totalRegistrants = this.dataSource.data.length;
+      this.approvedRegistrants = this.dataSource.data.filter(registrant => registrant.status === 'Approved').length;
+      this.rejectedRegistrants = this.dataSource.data.filter(registrant => registrant.status === 'Rejected').length;
+
+      // Attach paginator and sorter
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    },
+    (error: HttpErrorResponse) => {
+      console.error('Error fetching registrants:', error);
+      this.snackBar.open('Failed to fetch registrants.', 'Close', { duration: 3000 });
+    }
+  );
+}
+ 
+
+fetchAttendees() {
+  const eventId = this.data.eventId;
+  this.apiService.getAttendees(eventId).subscribe(
+    (response: any) => {
+      const attendeesData = response.map((item: any) => ({
+        ...item,
+        image: this.sanitizer.bypassSecurityTrustUrl(item.image),
+      }));
+  
+      this.attendanceDataSource.data = attendeesData.filter((attendee: any) =>
+        Number(attendee.event_id) === Number(eventId)
+      );
+      
+      // Calculate attendee statistics
+      this.totalAttendees = this.attendanceDataSource.data.length;
+      this.approvedAttendees = this.attendanceDataSource.data.filter(attendee => attendee.status === 'Approved').length;
+      this.rejectedAttendees = this.attendanceDataSource.data.filter(attendee => attendee.status === 'Rejected').length;
+
+      // Attach paginator and sorter
+      this.attendanceDataSource.paginator = this.paginator;
+      this.attendanceDataSource.sort = this.sort;
+    },
+    (error: HttpErrorResponse) => {
+      console.error('Error fetching attendees:', error);
+      this.snackBar.open('Failed to fetch attendees.', 'Close', { duration: 3000 });
+    }
+  );
+}
+
 
   updateStatus(studentId: number, eventId: number, status: string) {
     const data = {

@@ -26,8 +26,8 @@
         }">
         <strong>Status:</strong>
         {{  submissionData.status === 'Pending' ? 'Pending for approval' : 
-            submissionData.status === 'Approved' ? 'Approved to attend' : 
-            submissionData.status === 'Rejected' ? 'Rejected' : 
+            submissionData.status === 'Approved' ? 'Attendance is Approved' : 
+            submissionData.status === 'Rejected' ? 'Attendance is Rejected' : 
             'Unknown Status' }}
       </p>             
       <button class="back-btn p-4" (click)="goBack()">Back</button>
