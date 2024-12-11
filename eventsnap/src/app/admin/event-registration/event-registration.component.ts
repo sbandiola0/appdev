@@ -1,5 +1,5 @@
 import { ApiService } from './../../services/api.service';
-import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder,} from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,6 +15,9 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 interface EventInfo {
   event_name: string;
@@ -34,7 +37,6 @@ interface EventInfo {
     MatIconAnchor,
     MatIconButton,
     MatTableModule,
-    CanvasJSAngularChartsModule
   ],
   templateUrl: './event-registration.component.html',
   styleUrls: ['./event-registration.component.css'],
@@ -46,13 +48,14 @@ export class EventRegistrationComponent implements OnInit {
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('chartCanvas', { static: true }) chartCanvas!: ElementRef;
   totalRegistrants: number = 0;
   approvedRegistrants: number = 0;
   rejectedRegistrants: number = 0;
   totalAttendees: number = 0;
   approvedAttendees: number = 0;
   rejectedAttendees: number = 0;
-  chartOptions: any;
+  chart!: Chart;
 
 
   constructor(
@@ -67,7 +70,7 @@ export class EventRegistrationComponent implements OnInit {
     this.fetchRegistrants();
     this.fetchAttendees();
     this.getAttendance();
-    this.loadChart();
+    this.createChart();
   }
 
 // Modify your `getAttendance` method to handle the presence of the image property
@@ -125,39 +128,53 @@ getAttendance() {
   );
 }
 
-loadChart() {
-  // Check if data is available
-  if (this.totalRegistrants >= 0 && this.approvedRegistrants >= 0 && this.rejectedRegistrants >= 0 && 
-      this.totalAttendees >= 0 && this.approvedAttendees >= 0 && this.rejectedAttendees >= 0) {
-
-    // Create the chart with actual values
-    this.chartOptions = {
-      animationEnabled: true,
-      title: {
-        text: "Event Registration and Attendance"
-      },
-      subtitles: [{
-        text: `Total Registrants: ${this.totalRegistrants}, Total Attendees: ${this.totalAttendees}`
-      }],
-      data: [{
-        type: "pie",
-        startAngle: 240,
-        yValueFormatString: "##0\"\"",
-        indexLabel: "{label} {y}",
-        dataPoints: [
-          { y: this.approvedRegistrants, label: "Approved Registrants" },
-          { y: this.rejectedRegistrants, label: "Rejected Registrants" },
-          { y: this.totalRegistrants - this.approvedRegistrants - this.rejectedRegistrants, label: "Pending Registrants" },
-          { y: this.approvedAttendees, label: "Approved Attendees" },
-          { y: this.rejectedAttendees, label: "Rejected Attendees" },
-          { y: this.totalAttendees - this.approvedAttendees - this.rejectedAttendees, label: "Pending Attendees" }
-        ]
-      }]
-    };
-  } else {
-    console.error("Data not available for chart.");
+createChart(): void {
+  if (this.chart) {
+    this.chart.destroy();
   }
+
+  this.chart = new Chart(this.chartCanvas.nativeElement, {
+    type: 'pie',
+    data: {
+      labels: ['Total Registrants', 'Approved Registrants', 'Rejected Registrants', 'Total Attendees', 'Approved Attendees', 'Rejected Attendees'],
+      datasets: [{
+        label: 'Registrants/Attendees',
+        data: [
+          this.totalRegistrants,
+          this.approvedRegistrants,
+          this.rejectedRegistrants,
+          this.totalAttendees,
+          this.approvedAttendees,
+          this.rejectedAttendees
+        ],
+        backgroundColor: ['#4e73df', '#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e', '#e74a3b'],
+        hoverBackgroundColor: ['#2e59d9', '#17a673', '#d03f25', '#2c9faf', '#d4b20d', '#d03f25'],
+        borderColor: ['#4e73df', '#1cc88a', '#e74a3b', '#36b9cc', '#f6c23e', '#e74a3b'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'left',  // Aligns the legend to the left
+          labels: {
+            padding: 20,  // Adds padding to the left of the labels
+            boxWidth: 20,  // Adjusts the size of the color box next to the label
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              return `${tooltipItem.label}: ${tooltipItem.raw}`;  // Shows the value of the segment
+            }
+          }
+        }
+      }
+    }
+  });
 }
+
 
 
 fetchRegistrants() {
@@ -177,6 +194,9 @@ fetchRegistrants() {
       this.totalRegistrants = this.dataSource.data.length;
       this.approvedRegistrants = this.dataSource.data.filter(registrant => registrant.status === 'Approved').length;
       this.rejectedRegistrants = this.dataSource.data.filter(registrant => registrant.status === 'Rejected').length;
+
+      // Create chart once data is fetched and values are populated
+      this.createChart();
 
       // Attach paginator and sorter
       this.dataSource.paginator = this.paginator;
@@ -207,6 +227,9 @@ fetchAttendees() {
       this.totalAttendees = this.attendanceDataSource.data.length;
       this.approvedAttendees = this.attendanceDataSource.data.filter(attendee => attendee.status === 'Approved').length;
       this.rejectedAttendees = this.attendanceDataSource.data.filter(attendee => attendee.status === 'Rejected').length;
+
+      // Create chart once data is fetched and values are populated
+      this.createChart();
 
       // Attach paginator and sorter
       this.attendanceDataSource.paginator = this.paginator;

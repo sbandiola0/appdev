@@ -23,6 +23,7 @@
     "@canvasjs/angular-charts": "^1.2.0",
     "@zxing/library": "^0.21.0",
     "body-parser": "^1.20.2",
+    "chart.js": "^4.4.7",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "ngx-scanner-qrcode": "^1.6.9",
